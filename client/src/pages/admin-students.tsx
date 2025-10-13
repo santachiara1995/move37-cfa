@@ -80,9 +80,11 @@ export default function AdminStudents() {
       });
     },
     onError: (error: any) => {
+      console.error("Bulk import error:", error);
+      const message = error?.message || error?.errors?.[0]?.message || "Failed to import students";
       toast({ 
         title: "Import Failed", 
-        description: error.message || "Failed to import students",
+        description: message,
         variant: "destructive"
       });
     },
@@ -209,24 +211,48 @@ export default function AdminStudents() {
     setCsvData(csvData.filter((_, i) => i !== index));
   };
 
+  const isValidDate = (dateString: string): boolean => {
+    if (!dateString || !dateString.trim()) return true; // Optional field
+    
+    // Check format YYYY-MM-DD
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(dateString.trim())) return false;
+    
+    // Check if it's a valid date
+    const date = new Date(dateString.trim());
+    return date instanceof Date && !isNaN(date.getTime());
+  };
+
   const handleBulkImport = () => {
-    const invalidStudents = csvData.filter(s => !s.firstName || !s.lastName || !s.tenantId);
-    if (invalidStudents.length > 0) {
+    // Validate required fields
+    const missingFields = csvData.filter(s => !s.firstName || !s.lastName || !s.tenantId);
+    if (missingFields.length > 0) {
       toast({ 
         title: "Validation Error", 
-        description: `${invalidStudents.length} students missing required fields (firstName, lastName, or valid school)`,
+        description: `${missingFields.length} students missing required fields (firstName, lastName, or valid school)`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate dates
+    const invalidDates = csvData.filter(s => s.dateOfBirth && !isValidDate(s.dateOfBirth));
+    if (invalidDates.length > 0) {
+      toast({ 
+        title: "Invalid Dates", 
+        description: `${invalidDates.length} students have invalid date format. Use YYYY-MM-DD (e.g., 2000-01-15)`,
         variant: "destructive"
       });
       return;
     }
 
     const studentsToImport = csvData.map(s => ({
-      firstName: s.firstName,
-      lastName: s.lastName,
-      email: s.email || null,
-      phone: s.phone || null,
-      dateOfBirth: s.dateOfBirth ? new Date(s.dateOfBirth) : null,
-      filizId: s.filizId || null,
+      firstName: s.firstName.trim(),
+      lastName: s.lastName.trim(),
+      email: s.email?.trim() || undefined,
+      phone: s.phone?.trim() || undefined,
+      dateOfBirth: s.dateOfBirth?.trim() || undefined,
+      filizId: s.filizId?.trim() || undefined,
       tenantId: s.tenantId!,
     }));
 
@@ -401,9 +427,12 @@ export default function AdminStudents() {
                                 type="date"
                                 value={student.dateOfBirth}
                                 onChange={(e) => updateCSVStudent(index, 'dateOfBirth', e.target.value)}
-                                className="h-8"
+                                className={`h-8 ${student.dateOfBirth && !isValidDate(student.dateOfBirth) ? 'border-destructive' : ''}`}
                                 data-testid={`input-csv-dob-${index}`}
                               />
+                              {student.dateOfBirth && !isValidDate(student.dateOfBirth) && (
+                                <p className="text-xs text-destructive mt-1">Invalid date format (use YYYY-MM-DD)</p>
+                              )}
                             </td>
                             <td className="p-2">
                               <Input

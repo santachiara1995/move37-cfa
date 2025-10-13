@@ -832,19 +832,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdStudents.push(student);
       }
 
-      // Log bulk import action
-      await createAuditLog(
-        userId,
-        "system",
-        "bulk_import_students",
-        "student",
-        "bulk",
-        { 
-          count: createdStudents.length,
-          tenantIds: Array.from(new Set(createdStudents.map(s => s.tenantId)))
-        },
-        req
-      );
+      // Log bulk import action (use first student's tenant for cross-tenant operations)
+      const firstTenantId = createdStudents[0]?.tenantId || validatedStudents[0]?.tenantId;
+      if (firstTenantId) {
+        await createAuditLog(
+          userId,
+          firstTenantId,
+          "bulk_import_students",
+          "student",
+          "bulk",
+          { 
+            count: createdStudents.length,
+            tenantIds: Array.from(new Set(createdStudents.map(s => s.tenantId)))
+          },
+          req
+        );
+      }
 
       res.json({ 
         success: true, 

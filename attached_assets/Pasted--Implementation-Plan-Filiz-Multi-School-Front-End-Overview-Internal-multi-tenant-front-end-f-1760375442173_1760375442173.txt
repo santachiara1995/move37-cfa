@@ -1,0 +1,208 @@
+# Implementation Plan — Filiz Multi-School Front-End
+
+## Overview
+Internal, multi-tenant front end for a consulting firm to administer **three schools** using the **Filiz API** as the single source of truth.  
+Features: unified dashboards, CERFA 10103*10 PDF generation, contract/devis/OPCO/RAC management, and cross-school analytics.  
+Stack: **Next.js + Node/Express (TypeScript)** with **Postgres + S3**.
+
+---
+
+## 1. System Architecture
+
+### 1.1 Front-End
+- **Next.js (App Router)**
+- **React Query** for data fetching
+- **TanStack Table** for CRUD tables
+- **Tailwind CSS** for UI
+- **i18n (FR primary, EN secondary)**
+- **PWA** (offline read-only mode, installable)
+
+### 1.2 Back-End (BFF)
+- **Node.js + Express (TypeScript)**
+- **Postgres** for cache/config/audit
+- **Redis + BullMQ** for background jobs (sync, report)
+- **pdf-lib** for filling CERFA PDFs
+- **S3-compatible storage** for generated PDFs
+- **Auth** via Clerk or NextAuth (email/password + optional Google Workspace SSO)
+- **MFA + RBAC** per tenant
+- **Sentry** + structured logs for observability
+
+---
+
+## 2. Modules & Components
+
+### 2.1 Authentication & Authorization
+- Email/password login
+- Google SSO (optional)
+- MFA
+- RBAC roles: `OpsAdmin`, `BillingOps`, `AnalystRO`
+- Tenant-based role isolation
+
+### 2.2 Tenant Management
+- Per-school API key management
+- Tenant switcher (global header)
+- Tenant isolation middleware in backend
+
+### 2.3 Dashboard
+- KPIs: Contracts in progress, OPCO to send, Devis pending, RAC overdue
+- Graphs per school + “All schools” rollups
+- React Query SWR caching
+
+### 2.4 Students Module
+- List/filter/search from Filiz API
+- Autocomplete component (for Devis/CERFA association)
+- Detail panel with linked contracts and stages
+
+### 2.5 Contracts Module
+- Fetch via FilizAdapter
+- Table view + filter by status/date
+- Detail view + “Remplir CERFA” button
+- CERFA generation logs in audit trail
+
+### 2.6 CERFA PDF Service
+- Versioned mapping JSON (`cerfa_field_mapping.json`)
+- Uses **pdf-lib** to fill and flatten fields
+- Upload to S3, return URL
+- Immutable audit log entry per generation
+
+### 2.7 Devis & OPCO Modules
+- Read-only Devis/OPCO/RAC data from Filiz
+- Table + filters + CSV export
+- Links to associated CERFA or contract
+
+### 2.8 Reporting & Exports
+- Manual CSV/Excel exports
+- Scheduled weekly summary emails (BullMQ)
+- Templates configurable in `/reports/templates`
+
+### 2.9 Audit & Compliance
+- Audit log table: {userId, tenantId, action, timestamp, payload}
+- Immutable, append-only
+- PII encryption at rest
+- GDPR: retention + access logging
+
+### 2.10 Localization
+- FR primary, EN secondary
+- Configurable in user settings
+
+---
+
+## 3. Data Flow — CERFA Generation
+
+1. User clicks “Remplir CERFA” on a contract.
+2. Front-end calls `POST /tenants/:tid/cerfa/10103_10/fill { contractId }`.
+3. Backend fetches data from Filiz API (`apprentice`, `employer`, `contract`, `cfa`).
+4. Mapping JSON is loaded → pdf-lib fills fields → form flattened.
+5. PDF stored on S3, URL returned.
+6. Audit event recorded.
+7. User downloads PDF or sends for signature.
+
+---
+
+## 4. API Endpoints (BFF)
+
+| Endpoint | Method | Description |
+|-----------|---------|--------------|
+| `/auth/login` | POST | Login user |
+| `/tenants` | GET | List available tenants |
+| `/tenants/:tid/dashboard` | GET | KPIs per school |
+| `/tenants/:tid/students` | GET | Search/list students |
+| `/tenants/:tid/contracts` | GET | List contracts |
+| `/tenants/:tid/contracts/:id` | GET | Get contract detail |
+| `/tenants/:tid/cerfa/10103_10/fill` | POST | Generate filled CERFA PDF |
+| `/tenants/:tid/devis` | GET | List devis |
+| `/tenants/:tid/opco` | GET | OPCO status list |
+| `/tenants/:tid/rac` | GET | RAC invoices |
+| `/tenants/:tid/reports/weekly` | POST | Schedule weekly report |
+| `/audit` | GET | Admin view of audit logs |
+
+---
+
+## 5. Sprint Plan (Agile — 6 Sprints)
+
+### Sprint 1 — Core Framework (2 weeks)
+- Monorepo setup (FE + BE)
+- CI/CD pipelines (GitHub → Vercel/Fly)
+- Auth skeleton (NextAuth/Clerk)
+- Tenant middleware & mock Filiz API
+
+### Sprint 2 — Dashboard & Students (2 weeks)
+- Dashboard components
+- Students list/autocomplete
+- React Query SWR integration
+- Caching setup
+
+### Sprint 3 — Contracts & CERFA (2 weeks)
+- Contracts table/detail
+- Implement `fillCerfa()` endpoint
+- Generate & store PDFs
+- Add audit trail
+
+### Sprint 4 — Devis, OPCO, RAC (2 weeks)
+- Read-only Devis/OPCO/RAC modules
+- CSV exports
+- Filtering/sorting
+
+### Sprint 5 — Reports, Audit, PWA (2 weeks)
+- Scheduled weekly reports (BullMQ)
+- Audit log viewer UI
+- Offline PWA + background sync
+
+### Sprint 6 — Polish & Launch (1 week)
+- English i18n
+- Security/GDPR audit
+- Docs & final tests
+
+---
+
+## 6. KPIs & QA
+- p95 latency <2s; avg <1s for cached calls
+- 100% user actions logged
+- 80% backend test coverage
+- CERFA generation accuracy ±1 field
+
+---
+
+## 7. Risks & Mitigation
+| Risk | Mitigation |
+|------|-------------|
+| Filiz API undocumented | Abstract via `FilizAdapter`; configurable endpoints |
+| Rate limits | Caching + exponential backoff polling |
+| PDF field drift | Versioned mapping JSON |
+| PII handling | Encrypted columns + GDPR retention |
+| Multi-tenant isolation | Tenant guard middleware |
+
+---
+
+## 8. Repository Layout
+```
+/app
+  /frontend
+    /components
+    /pages
+    /hooks
+    /lib
+  /backend
+    /src
+      /adapters/FilizAdapter.ts
+      /services/PdfService.ts
+      /routes
+      /models
+      /jobs
+      /utils
+  /shared
+    /types
+    /constants
+/docs
+  /mapping/cerfa_field_mapping.json
+  /specs/technical_spec.md
+```
+
+---
+
+## 9. Next Steps
+1. Implement **BFF boilerplate + FilizAdapter mock**.  
+2. Configure tenants (3 schools) + API keys.  
+3. Build CERFA generation endpoint.  
+4. Test with sample Filiz data.  
+5. Add audit + PWA + deploy.

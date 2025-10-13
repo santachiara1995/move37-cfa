@@ -91,6 +91,9 @@ Core entities:
 
 ## Recent Changes (October 2025)
 - ✅ **Create Dossier Feature**: Quick-create dialog on dashboard for schools and students with tabbed interface
+  - **Bug Fix**: Resolved user auto-creation issue - all Replit Auth users now automatically get OpsAdmin role
+  - **Bug Fix**: Fixed apiRequest parameter order in mutations (method, url, data)
+  - Fully tested end-to-end with successful school/student creation
 - ✅ Added Programs table to database schema (training programs with RNCP codes)
 - ✅ Built complete Admin Panel with five modules:
   - Schools Management: CRUD operations for tenants/schools

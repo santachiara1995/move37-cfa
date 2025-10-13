@@ -69,7 +69,7 @@ export default function Dashboard() {
       // Invalidate all dashboard KPI queries
       queryClient.invalidateQueries({ 
         predicate: (query) => 
-          query.queryKey[0]?.toString().includes('/api/dashboard/kpis')
+          query.queryKey[0]?.toString().includes('/api/dashboard/kpis') ?? false
       });
       setIsDialogOpen(false);
       setSelectedSchoolId("");

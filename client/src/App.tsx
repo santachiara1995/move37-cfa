@@ -20,6 +20,8 @@ import AuditLogs from "@/pages/audit-logs";
 import AdminSchools from "@/pages/admin-schools";
 import AdminStudents from "@/pages/admin-students";
 import AdminPrograms from "@/pages/admin-programs";
+import AdminUsers from "@/pages/admin-users";
+import AdminActivity from "@/pages/admin-activity";
 import NotFound from "@/pages/not-found";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -43,6 +45,8 @@ function Router() {
           <Route path="/admin/schools" component={AdminSchools} />
           <Route path="/admin/students" component={AdminStudents} />
           <Route path="/admin/programs" component={AdminPrograms} />
+          <Route path="/admin/users" component={AdminUsers} />
+          <Route path="/admin/activity" component={AdminActivity} />
         </>
       )}
       <Route component={NotFound} />

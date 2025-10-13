@@ -46,6 +46,12 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
+export const updateUserRoleSchema = z.object({
+  role: z.enum(["OpsAdmin", "BillingOps", "AnalystRO"]),
+  tenantIds: z.array(z.string()),
+});
+
+export type UpdateUserRole = z.infer<typeof updateUserRoleSchema>;
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 

@@ -9,6 +9,7 @@ import {
   insertTenantSchema, 
   insertStudentSchema, 
   insertProgramSchema,
+  updateUserRoleSchema,
   type Tenant 
 } from "@shared/schema";
 
@@ -496,6 +497,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== ADMIN ROUTES (OpsAdmin only) ==========
   
+  // User Management
+  app.get("/api/admin/users", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const allUsers = await storage.getAllUsers();
+      res.json(allUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.put("/api/admin/users/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Validate request body
+      const validation = updateUserRoleSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid request data", 
+          errors: validation.error.errors 
+        });
+      }
+      
+      const existingUser = await storage.getUser(req.params.id);
+      if (!existingUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const userData = {
+        ...existingUser,
+        role: validation.data.role,
+        tenantIds: validation.data.tenantIds,
+      };
+      
+      const user = await storage.upsertUser(userData);
+      
+      await createAuditLog(
+        userId,
+        null,
+        "update_user_permissions",
+        "user",
+        user.id,
+        { email: user.email, role: user.role, tenantIds: user.tenantIds },
+        req
+      );
+      
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  // CSV Export
+  app.get("/api/admin/export/schools", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const schools = await storage.getAllTenants();
+      
+      const csv = [
+        "ID,Name,Slug,Filiz API URL,Active,Created At",
+        ...schools.map((s) => 
+          `${s.id},"${s.name}","${s.slug}","${s.filizApiUrl || ""}",${s.isActive},${s.createdAt}`
+        ),
+      ].join("\n");
+      
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", "attachment; filename=schools.csv");
+      res.send(csv);
+    } catch (error) {
+      console.error("Error exporting schools:", error);
+      res.status(500).json({ message: "Failed to export schools" });
+    }
+  });
+
+  app.get("/api/admin/export/students", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const tenants = await storage.getAllTenants();
+      let allStudents: any[] = [];
+      
+      for (const tenant of tenants) {
+        const students = await storage.getStudents(tenant.id);
+        allStudents = [...allStudents, ...students.map((s) => ({ ...s, schoolName: tenant.name }))];
+      }
+      
+      const csv = [
+        "ID,First Name,Last Name,Email,Phone,Date of Birth,School,Filiz ID,Created At",
+        ...allStudents.map((s) => 
+          `${s.id},"${s.firstName}","${s.lastName}","${s.email || ""}","${s.phone || ""}","${s.dateOfBirth || ""}","${s.schoolName}","${s.filizId || ""}",${s.createdAt}`
+        ),
+      ].join("\n");
+      
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", "attachment; filename=students.csv");
+      res.send(csv);
+    } catch (error) {
+      console.error("Error exporting students:", error);
+      res.status(500).json({ message: "Failed to export students" });
+    }
+  });
+
+  app.get("/api/admin/export/programs", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const tenants = await storage.getAllTenants();
+      let allPrograms: any[] = [];
+      
+      for (const tenant of tenants) {
+        const programs = await storage.getPrograms(tenant.id);
+        allPrograms = [...allPrograms, ...programs.map((p) => ({ ...p, schoolName: tenant.name }))];
+      }
+      
+      const csv = [
+        "ID,Name,Code,Level,Duration (months),RNCP Code,School,Active,Created At",
+        ...allPrograms.map((p) => 
+          `${p.id},"${p.name}","${p.code || ""}","${p.level || ""}","${p.duration || ""}","${p.rncpCode || ""}","${p.schoolName}",${p.isActive},${p.createdAt}`
+        ),
+      ].join("\n");
+      
+      res.setHeader("Content-Type", "text/csv");
+      res.setHeader("Content-Disposition", "attachment; filename=programs.csv");
+      res.send(csv);
+    } catch (error) {
+      console.error("Error exporting programs:", error);
+      res.status(500).json({ message: "Failed to export programs" });
+    }
+  });
+
   // Schools Management
   app.get("/api/admin/schools", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {

@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, User, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, User, Search, Download } from "lucide-react";
 import type { Student, Tenant } from "@shared/schema";
 import { format } from "date-fns";
 
@@ -115,7 +115,16 @@ export default function AdminStudents() {
           <h1 className="text-3xl font-bold" data-testid="heading-students">Students Management</h1>
           <p className="text-muted-foreground mt-1">Manage students across all schools</p>
         </div>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => window.open("/api/admin/export/students", "_blank")}
+            data-testid="button-export-students"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button onClick={openCreateDialog} data-testid="button-add-student">
               <Plus className="w-4 h-4 mr-2" />
@@ -222,6 +231,7 @@ export default function AdminStudents() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <div className="flex gap-4">

@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, GraduationCap, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, GraduationCap, Search, Download } from "lucide-react";
 import type { Program, Tenant } from "@shared/schema";
 
 export default function AdminPrograms() {
@@ -118,7 +118,16 @@ export default function AdminPrograms() {
           <h1 className="text-3xl font-bold" data-testid="heading-programs">Training Programs</h1>
           <p className="text-muted-foreground mt-1">Manage training programs and certifications</p>
         </div>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => window.open("/api/admin/export/programs", "_blank")}
+            data-testid="button-export-programs"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button onClick={openCreateDialog} data-testid="button-add-program">
               <Plus className="w-4 h-4 mr-2" />
@@ -255,6 +264,7 @@ export default function AdminPrograms() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <div className="flex gap-4">

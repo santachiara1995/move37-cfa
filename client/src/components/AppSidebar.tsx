@@ -101,6 +101,18 @@ const adminMenuItems = [
     icon: GraduationCap,
     testId: "nav-admin-programs",
   },
+  {
+    title: "Users",
+    url: "/admin/users",
+    icon: Shield,
+    testId: "nav-admin-users",
+  },
+  {
+    title: "Activity",
+    url: "/admin/activity",
+    icon: Settings,
+    testId: "nav-admin-activity",
+  },
 ];
 
 export function AppSidebar() {

@@ -40,9 +40,11 @@ Core entities:
 5. **Devis/OPCO/RAC**: Read-only tables with CSV export capability
 6. **Audit Logs**: Comprehensive activity tracking for compliance
 7. **Admin Panel** (OpsAdmin only):
-   - Schools Management: Add/edit/delete schools with Filiz API configuration
-   - Students Management: Add/edit/delete students across all schools
-   - Programs Management: Add/edit/delete training programs with RNCP codes
+   - Schools Management: Add/edit/delete schools with Filiz API configuration + CSV export
+   - Students Management: Add/edit/delete students across all schools + CSV export
+   - Programs Management: Add/edit/delete training programs with RNCP codes + CSV export
+   - Users Management: Add/edit/delete users with role and school access control
+   - Activity Dashboard: Recent admin actions with statistics and filtering
 8. **FilizAdapter**: Abstraction layer for all Filiz API interactions
 
 ## Development Status
@@ -87,13 +89,16 @@ Core entities:
 
 ## Recent Changes (October 2025)
 - ✅ Added Programs table to database schema (training programs with RNCP codes)
-- ✅ Built complete Admin Panel with three modules:
+- ✅ Built complete Admin Panel with five modules:
   - Schools Management: CRUD operations for tenants/schools
   - Students Management: Cross-school student management with search/filter
   - Programs Management: Training programs (CAP, BTS, etc.) with metadata
+  - Users Management: OpsAdmins can manage users, roles, and school access
+  - Activity Dashboard: Recent administrative actions from audit logs with stats
+- ✅ CSV Export: One-click CSV export for schools, students, and programs
 - ✅ Added admin routes with OpsAdmin role restriction
 - ✅ Updated sidebar navigation with admin section (visible to OpsAdmin only)
-- ✅ Implemented all storage methods for programs, tenant updates/deletes, student updates/deletes
+- ✅ Implemented all storage methods for programs, users, tenant updates/deletes, student updates/deletes
 - ✅ Added audit logging for all admin operations
 - ✅ Integrated Filiz API documentation research (https://documentation.filiz.io/)
 - ✅ Created CERFA 10103*10 field mapping system (181 form fields analyzed)

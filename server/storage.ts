@@ -2,6 +2,7 @@ import {
   users,
   tenants,
   students,
+  entreprises,
   contracts,
   devis,
   opco,
@@ -15,6 +16,8 @@ import {
   type InsertTenant,
   type Student,
   type InsertStudent,
+  type Entreprise,
+  type InsertEntreprise,
   type Contract,
   type InsertContract,
   type Devis,
@@ -57,6 +60,13 @@ export interface IStorage {
   createStudent(student: InsertStudent): Promise<Student>;
   updateStudent(id: string, student: Partial<InsertStudent>): Promise<Student>;
   deleteStudent(id: string): Promise<void>;
+
+  // Entreprise operations
+  getEntreprises(tenantId: string): Promise<Entreprise[]>;
+  getEntreprise(id: string): Promise<Entreprise | undefined>;
+  createEntreprise(entreprise: InsertEntreprise): Promise<Entreprise>;
+  updateEntreprise(id: string, entreprise: Partial<InsertEntreprise>): Promise<Entreprise>;
+  deleteEntreprise(id: string): Promise<void>;
 
   // Program operations
   getPrograms(tenantId: string): Promise<Program[]>;
@@ -207,6 +217,38 @@ export class DatabaseStorage implements IStorage {
 
   async deleteStudent(id: string): Promise<void> {
     await db.delete(students).where(eq(students.id, id));
+  }
+
+  // Entreprise operations
+  async getEntreprises(tenantId: string): Promise<Entreprise[]> {
+    return await db
+      .select()
+      .from(entreprises)
+      .where(eq(entreprises.tenantId, tenantId))
+      .orderBy(desc(entreprises.createdAt));
+  }
+
+  async getEntreprise(id: string): Promise<Entreprise | undefined> {
+    const [entreprise] = await db.select().from(entreprises).where(eq(entreprises.id, id));
+    return entreprise;
+  }
+
+  async createEntreprise(entrepriseData: InsertEntreprise): Promise<Entreprise> {
+    const [entreprise] = await db.insert(entreprises).values(entrepriseData).returning();
+    return entreprise;
+  }
+
+  async updateEntreprise(id: string, entrepriseData: Partial<InsertEntreprise>): Promise<Entreprise> {
+    const [entreprise] = await db
+      .update(entreprises)
+      .set({ ...entrepriseData, updatedAt: new Date() })
+      .where(eq(entreprises.id, id))
+      .returning();
+    return entreprise;
+  }
+
+  async deleteEntreprise(id: string): Promise<void> {
+    await db.delete(entreprises).where(eq(entreprises.id, id));
   }
 
   // Program operations

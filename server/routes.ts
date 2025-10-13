@@ -7,7 +7,8 @@ import { cerfaService } from "./cerfaService";
 import { objectStorage } from "./objectStorage";
 import { 
   insertTenantSchema, 
-  insertStudentSchema, 
+  insertStudentSchema,
+  insertEntrepriseSchema,
   insertProgramSchema,
   updateUserRoleSchema,
   type Tenant 
@@ -920,6 +921,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting student:", error);
       res.status(500).json({ message: "Failed to delete student" });
+    }
+  });
+
+  // Entreprise Management
+  app.post("/api/admin/entreprises", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      const validation = insertEntrepriseSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: validation.error.errors 
+        });
+      }
+      
+      const entreprise = await storage.createEntreprise(validation.data);
+      
+      await createAuditLog(
+        userId,
+        entreprise.tenantId,
+        "create_entreprise",
+        "entreprise",
+        entreprise.id,
+        { name: `${entreprise.raisonSociale} - ${entreprise.prenom} ${entreprise.nom}` },
+        req
+      );
+      
+      res.json(entreprise);
+    } catch (error) {
+      console.error("Error creating entreprise:", error);
+      res.status(500).json({ message: "Failed to create entreprise" });
     }
   });
 

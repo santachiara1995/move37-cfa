@@ -114,6 +114,34 @@ export type InsertStudent = z.infer<typeof insertStudentSchema>;
 export type Student = typeof students.$inferSelect;
 
 // ============================================================================
+// ENTREPRISES (COMPANIES)
+// ============================================================================
+
+export const entreprises = pgTable("entreprises", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  raisonSociale: varchar("raison_sociale").notNull(), // Company name
+  nom: varchar("nom").notNull(), // Contact last name
+  prenom: varchar("prenom").notNull(), // Contact first name
+  email: varchar("email"),
+  phone: varchar("phone"),
+  filizId: varchar("filiz_id"), // External ID from Filiz API
+  cachedData: jsonb("cached_data"), // Full cached data from Filiz API
+  lastSyncedAt: timestamp("last_synced_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertEntrepriseSchema = createInsertSchema(entreprises).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertEntreprise = z.infer<typeof insertEntrepriseSchema>;
+export type Entreprise = typeof entreprises.$inferSelect;
+
+// ============================================================================
 // CONTRACTS
 // ============================================================================
 

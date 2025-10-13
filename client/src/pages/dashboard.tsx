@@ -62,10 +62,10 @@ export default function Dashboard() {
     },
   });
 
-  const createStudentMutation = useMutation({
-    mutationFn: async (data: any) => apiRequest("POST", "/api/admin/students", data),
+  const createEntrepriseMutation = useMutation({
+    mutationFn: async (data: any) => apiRequest("POST", "/api/admin/entreprises", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/students"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/entreprises"] });
       // Invalidate all dashboard KPI queries
       queryClient.invalidateQueries({ 
         predicate: (query) => 
@@ -73,10 +73,10 @@ export default function Dashboard() {
       });
       setIsDialogOpen(false);
       setSelectedSchoolId("");
-      toast({ title: "Success", description: "Student created successfully" });
+      toast({ title: "Success", description: "Entreprise created successfully" });
     },
     onError: () => {
-      toast({ title: "Error", description: "Failed to create student", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to create entreprise", variant: "destructive" });
     },
   });
 
@@ -93,7 +93,7 @@ export default function Dashboard() {
     createSchoolMutation.mutate(data);
   };
 
-  const handleStudentSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleEntrepriseSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedSchoolId) {
       toast({ title: "Error", description: "Please select a school", variant: "destructive" });
@@ -102,13 +102,13 @@ export default function Dashboard() {
     const formData = new FormData(e.currentTarget);
     const data = {
       tenantId: selectedSchoolId,
-      firstName: formData.get("firstName") as string,
-      lastName: formData.get("lastName") as string,
+      raisonSociale: formData.get("raisonSociale") as string,
+      nom: formData.get("nom") as string,
+      prenom: formData.get("prenom") as string,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
-      dateOfBirth: formData.get("dateOfBirth") as string,
     };
-    createStudentMutation.mutate(data);
+    createEntrepriseMutation.mutate(data);
   };
 
   // Redirect to login if not authenticated
@@ -176,7 +176,7 @@ export default function Dashboard() {
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="school" data-testid="tab-school">School</TabsTrigger>
-                  <TabsTrigger value="student" data-testid="tab-student">Student</TabsTrigger>
+                  <TabsTrigger value="entreprise" data-testid="tab-entreprise">Entreprise</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="school">
@@ -242,12 +242,12 @@ export default function Dashboard() {
                   </form>
                 </TabsContent>
                 
-                <TabsContent value="student">
-                  <form onSubmit={handleStudentSubmit} className="space-y-4">
+                <TabsContent value="entreprise">
+                  <form onSubmit={handleEntrepriseSubmit} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="tenantId">School</Label>
                       <Select value={selectedSchoolId} onValueChange={setSelectedSchoolId}>
-                        <SelectTrigger data-testid="select-student-school">
+                        <SelectTrigger data-testid="select-entreprise-school">
                           <SelectValue placeholder="Select a school" />
                         </SelectTrigger>
                         <SelectContent>
@@ -259,23 +259,33 @@ export default function Dashboard() {
                         </SelectContent>
                       </Select>
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="raisonSociale">Raison Sociale (Company Name)</Label>
+                      <Input
+                        id="raisonSociale"
+                        name="raisonSociale"
+                        required
+                        placeholder="e.g., ABC Corporation"
+                        data-testid="input-entreprise-raison-sociale"
+                      />
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name</Label>
+                        <Label htmlFor="prenom">Prénom (First Name)</Label>
                         <Input
-                          id="firstName"
-                          name="firstName"
+                          id="prenom"
+                          name="prenom"
                           required
-                          data-testid="input-student-firstname"
+                          data-testid="input-entreprise-prenom"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name</Label>
+                        <Label htmlFor="nom">Nom (Last Name)</Label>
                         <Input
-                          id="lastName"
-                          name="lastName"
+                          id="nom"
+                          name="nom"
                           required
-                          data-testid="input-student-lastname"
+                          data-testid="input-entreprise-nom"
                         />
                       </div>
                     </div>
@@ -285,32 +295,23 @@ export default function Dashboard() {
                         id="email"
                         name="email"
                         type="email"
-                        data-testid="input-student-email"
+                        data-testid="input-entreprise-email"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="phone">Phone</Label>
+                      <Label htmlFor="phone">Téléphone</Label>
                       <Input
                         id="phone"
                         name="phone"
-                        data-testid="input-student-phone"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                      <Input
-                        id="dateOfBirth"
-                        name="dateOfBirth"
-                        type="date"
-                        data-testid="input-student-dob"
+                        data-testid="input-entreprise-phone"
                       />
                     </div>
                     <DialogFooter>
                       <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                         Cancel
                       </Button>
-                      <Button type="submit" disabled={createStudentMutation.isPending} data-testid="button-submit-student">
-                        {createStudentMutation.isPending ? "Creating..." : "Create Student"}
+                      <Button type="submit" disabled={createEntrepriseMutation.isPending} data-testid="button-submit-entreprise">
+                        {createEntrepriseMutation.isPending ? "Creating..." : "Create Entreprise"}
                       </Button>
                     </DialogFooter>
                   </form>

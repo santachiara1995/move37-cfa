@@ -90,13 +90,24 @@ export default function Dashboard() {
       filizApiKey: formData.get("filizApiKey") as string,
       isActive: isSchoolActive,
     };
+    
+    // Validate required fields
+    if (!data.name || !data.slug) {
+      toast({ 
+        title: "Validation Error", 
+        description: "School Name and Slug are required", 
+        variant: "destructive" 
+      });
+      return;
+    }
+    
     createSchoolMutation.mutate(data);
   };
 
   const handleEntrepriseSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedSchoolId) {
-      toast({ title: "Error", description: "Please select a school", variant: "destructive" });
+      toast({ title: "Validation Error", description: "Please select a school", variant: "destructive" });
       return;
     }
     const formData = new FormData(e.currentTarget);
@@ -108,6 +119,17 @@ export default function Dashboard() {
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
     };
+    
+    // Validate required fields
+    if (!data.raisonSociale || !data.nom || !data.prenom) {
+      toast({ 
+        title: "Validation Error", 
+        description: "Raison Sociale, First Name, and Last Name are required", 
+        variant: "destructive" 
+      });
+      return;
+    }
+    
     createEntrepriseMutation.mutate(data);
   };
 

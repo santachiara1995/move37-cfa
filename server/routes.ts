@@ -670,7 +670,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await createAuditLog(
         userId,
         school.id,
-        "create_school",
+        "create_tenant",
         "tenant",
         school.id,
         { name: school.name, slug: school.slug },

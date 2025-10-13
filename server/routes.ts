@@ -43,7 +43,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/auth/user", isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      let user = await storage.getUser(userId);
+      
+      // Auto-create user record if it doesn't exist (for users who logged in before upsert was implemented)
+      if (!user) {
+        const claims = req.user.claims;
+        const allTenants = await storage.getTenants();
+        const tenantIds = allTenants.map((t: Tenant) => t.id);
+        
+        user = await storage.upsertUser({
+          id: claims.sub,
+          email: claims.email,
+          firstName: claims.first_name,
+          lastName: claims.last_name,
+          profileImageUrl: claims.profile_image_url,
+          role: "OpsAdmin", // Default role - grants full access
+          tenantIds, // Grant access to all tenants
+        });
+      }
+      
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);

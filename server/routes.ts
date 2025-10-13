@@ -600,9 +600,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const csv = [
-        "ID,First Name,Last Name,Email,Phone,Date of Birth,School,Filiz ID,Created At",
+        "ID,First Name,Last Name,Email,Phone,Date of Birth,School,Filiz ID,Numéro OPCO,Numéro DEKRA,Created At",
         ...allStudents.map((s) => 
-          `${s.id},"${s.firstName}","${s.lastName}","${s.email || ""}","${s.phone || ""}","${s.dateOfBirth || ""}","${s.schoolName}","${s.filizId || ""}",${s.createdAt}`
+          `${s.id},"${s.firstName}","${s.lastName}","${s.email || ""}","${s.phone || ""}","${s.dateOfBirth || ""}","${s.schoolName}","${s.filizId || ""}","${s.numeroOpco || ""}","${s.numeroDekra || ""}",${s.createdAt}`
         ),
       ].join("\n");
       

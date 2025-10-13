@@ -12,6 +12,7 @@ import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import Students from "@/pages/students";
 import Contracts from "@/pages/contracts";
+import ContractCreate from "@/pages/contract-create";
 import ContractDetail from "@/pages/contract-detail";
 import DevisPage from "@/pages/devis";
 import OpcoPage from "@/pages/opco";
@@ -37,6 +38,7 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/students" component={Students} />
           <Route path="/contracts" component={Contracts} />
+          <Route path="/contracts/create" component={ContractCreate} />
           <Route path="/contracts/:id" component={ContractDetail} />
           <Route path="/devis" component={DevisPage} />
           <Route path="/opco" component={OpcoPage} />

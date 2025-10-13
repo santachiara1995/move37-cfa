@@ -9,6 +9,7 @@ import {
   insertTenantSchema, 
   insertStudentSchema, 
   insertProgramSchema,
+  insertContractSchema,
   updateUserRoleSchema,
   type Tenant 
 } from "@shared/schema";
@@ -327,32 +328,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      // In production, would fetch from Filiz API
-      // For now, use cached data or mock data
-      const contractData: any = contract.cachedData || {
-        id: contract.id,
-        contractNumber: contract.contractNumber || "",
-        status: contract.status,
-        startDate: contract.startDate?.toISOString() || "",
-        endDate: contract.endDate?.toISOString() || "",
-        apprentice: {
-          firstName: "Jean",
-          lastName: "Dupont",
-          email: "jean.dupont@example.com",
-          dateOfBirth: "1995-01-15",
-        },
-        employer: {
-          name: contract.employerName || "",
-          siret: "12345678901234",
-          address: "123 Rue Example, Paris",
-        },
-        cfa: {
-          name: contract.cfaName || "",
-          uai: "0751234A",
-        },
-      };
+      const contractData: any = contract.cachedData || {};
+      
+      if (!contractData.id) contractData.id = contract.id;
+      if (!contractData.contractNumber) contractData.contractNumber = contract.contractNumber;
+      if (!contractData.status) contractData.status = contract.status;
+      if (!contractData.startDate && contract.startDate) contractData.startDate = contract.startDate.toISOString();
+      if (!contractData.endDate && contract.endDate) contractData.endDate = contract.endDate.toISOString();
 
-      // Generate PDF
       const pdfBuffer = await cerfaService.generateCerfa10103(contractData);
 
       // Upload to object storage
@@ -389,6 +372,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating CERFA:", error);
       res.status(500).json({ message: "Failed to generate CERFA PDF" });
+    }
+  });
+
+  app.post("/api/contracts", isAuthenticated, requireRole("OpsAdmin", "BillingOps"), async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const validation = insertContractSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: validation.error.errors 
+        });
+      }
+      
+      if (!user.tenantIds.includes(validation.data.tenantId)) {
+        return res.status(403).json({ message: "Access denied to this tenant" });
+      }
+      
+      const contract = await storage.createContract(validation.data);
+      
+      await createAuditLog(
+        userId,
+        contract.tenantId,
+        "create_contract",
+        "contract",
+        contract.id,
+        { contractNumber: contract.contractNumber, status: contract.status },
+        req
+      );
+      
+      res.json(contract);
+    } catch (error) {
+      console.error("Error creating contract:", error);
+      res.status(500).json({ message: "Failed to create contract" });
     }
   });
 

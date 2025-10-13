@@ -141,7 +141,7 @@ export interface CerfaFieldMap {
   targetDiploma: string;
   diplomaTitle: string;
   diplomaCode: string;
-  rncp Code: string;
+  rncpCode: string;
   trainingOrganization: string;
   trainingStartDate: string;
   trainingEndDate: string;

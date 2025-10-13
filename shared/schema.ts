@@ -92,6 +92,8 @@ export const students = pgTable("students", {
   email: varchar("email"),
   phone: varchar("phone"),
   dateOfBirth: timestamp("date_of_birth"),
+  numeroOpco: varchar("numero_opco"), // Numéro OPCO
+  numeroDekra: varchar("numero_dekra"), // Numéro DEKRA
   cachedData: jsonb("cached_data"), // Full cached data from Filiz API
   lastSyncedAt: timestamp("last_synced_at"),
   createdAt: timestamp("created_at").defaultNow(),

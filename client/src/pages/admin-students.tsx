@@ -20,6 +20,8 @@ interface CSVStudent {
   dateOfBirth: string;
   school: string;
   filizId: string;
+  numeroOpco: string;
+  numeroDekra: string;
   tenantId?: string;
 }
 
@@ -101,6 +103,8 @@ export default function AdminStudents() {
       phone: formData.get("phone") as string,
       dateOfBirth: formData.get("dateOfBirth") ? new Date(formData.get("dateOfBirth") as string) : null,
       filizId: formData.get("filizId") as string || null,
+      numeroOpco: formData.get("numeroOpco") as string || null,
+      numeroDekra: formData.get("numeroDekra") as string || null,
     };
 
     if (editingStudent) {
@@ -156,7 +160,7 @@ export default function AdminStudents() {
     }
 
     const headers = lines[0].split(',').map(h => h.trim());
-    const expectedHeaders = ['firstName', 'lastName', 'email', 'phone', 'dateOfBirth', 'school', 'filizId'];
+    const expectedHeaders = ['firstName', 'lastName', 'email', 'phone', 'dateOfBirth', 'school', 'filizId', 'numeroOpco', 'numeroDekra'];
     
     const parsedData: CSVStudent[] = [];
     for (let i = 1; i < lines.length; i++) {
@@ -169,6 +173,8 @@ export default function AdminStudents() {
         dateOfBirth: values[4] || '',
         school: values[5] || '',
         filizId: values[6] || '',
+        numeroOpco: values[7] || '',
+        numeroDekra: values[8] || '',
       };
 
       // Try to match school by name or slug
@@ -253,6 +259,8 @@ export default function AdminStudents() {
       phone: s.phone?.trim() || undefined,
       dateOfBirth: s.dateOfBirth?.trim() || undefined,
       filizId: s.filizId?.trim() || undefined,
+      numeroOpco: s.numeroOpco?.trim() || undefined,
+      numeroDekra: s.numeroDekra?.trim() || undefined,
       tenantId: s.tenantId!,
     }));
 
@@ -260,7 +268,7 @@ export default function AdminStudents() {
   };
 
   const downloadTemplate = () => {
-    const template = 'firstName,lastName,email,phone,dateOfBirth,school,filizId\nJohn,Doe,john@example.com,0612345678,2000-01-15,paris-nord,\nJane,Smith,jane@example.com,0687654321,1999-05-20,lyon-centre,';
+    const template = 'firstName,lastName,email,phone,dateOfBirth,school,filizId,numeroOpco,numeroDekra\nJohn,Doe,john@example.com,0612345678,2000-01-15,paris-nord,,,\nJane,Smith,jane@example.com,0687654321,1999-05-20,lyon-centre,,,';
     const blob = new Blob([template], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -346,14 +354,14 @@ export default function AdminStudents() {
                   <div className="bg-muted p-4 rounded-md">
                     <p className="text-sm font-semibold mb-2">Expected CSV Format:</p>
                     <code className="text-xs font-mono block">
-                      firstName,lastName,email,phone,dateOfBirth,school,filizId
+                      firstName,lastName,email,phone,dateOfBirth,school,filizId,numeroOpco,numeroDekra
                     </code>
                     <p className="text-xs text-muted-foreground mt-2">
                       • <strong>school</strong> can be school name or slug (e.g., "École Paris Nord" or "paris-nord")
                       <br />
                       • <strong>dateOfBirth</strong> format: YYYY-MM-DD
                       <br />
-                      • Optional fields: email, phone, dateOfBirth, filizId
+                      • Optional fields: email, phone, dateOfBirth, filizId, numeroOpco, numeroDekra
                     </p>
                   </div>
                 </div>
@@ -384,6 +392,8 @@ export default function AdminStudents() {
                           <th className="text-left p-2 text-sm font-semibold">Date of Birth</th>
                           <th className="text-left p-2 text-sm font-semibold">School</th>
                           <th className="text-left p-2 text-sm font-semibold">Filiz ID</th>
+                          <th className="text-left p-2 text-sm font-semibold">N° OPCO</th>
+                          <th className="text-left p-2 text-sm font-semibold">N° DEKRA</th>
                           <th className="text-right p-2 text-sm font-semibold">Actions</th>
                         </tr>
                       </thead>
@@ -451,6 +461,22 @@ export default function AdminStudents() {
                                 onChange={(e) => updateCSVStudent(index, 'filizId', e.target.value)}
                                 className="h-8"
                                 data-testid={`input-csv-filizid-${index}`}
+                              />
+                            </td>
+                            <td className="p-2">
+                              <Input
+                                value={student.numeroOpco}
+                                onChange={(e) => updateCSVStudent(index, 'numeroOpco', e.target.value)}
+                                className="h-8"
+                                data-testid={`input-csv-numeroopco-${index}`}
+                              />
+                            </td>
+                            <td className="p-2">
+                              <Input
+                                value={student.numeroDekra}
+                                onChange={(e) => updateCSVStudent(index, 'numeroDekra', e.target.value)}
+                                className="h-8"
+                                data-testid={`input-csv-numerodekra-${index}`}
                               />
                             </td>
                             <td className="p-2">
@@ -589,6 +615,29 @@ export default function AdminStudents() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="numeroOpco">Numéro OPCO (optional)</Label>
+                  <Input
+                    id="numeroOpco"
+                    name="numeroOpco"
+                    defaultValue={editingStudent?.numeroOpco || ""}
+                    placeholder="OPCO number"
+                    data-testid="input-student-numeroopco"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="numeroDekra">Numéro DEKRA (optional)</Label>
+                  <Input
+                    id="numeroDekra"
+                    name="numeroDekra"
+                    defaultValue={editingStudent?.numeroDekra || ""}
+                    placeholder="DEKRA number"
+                    data-testid="input-student-numerodekra"
+                  />
+                </div>
+              </div>
+
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
                   Cancel
@@ -640,6 +689,8 @@ export default function AdminStudents() {
                   <th className="text-left p-4 font-semibold">Email</th>
                   <th className="text-left p-4 font-semibold">Phone</th>
                   <th className="text-left p-4 font-semibold">Date of Birth</th>
+                  <th className="text-left p-4 font-semibold">N° OPCO</th>
+                  <th className="text-left p-4 font-semibold">N° DEKRA</th>
                   <th className="text-right p-4 font-semibold">Actions</th>
                 </tr>
               </thead>
@@ -669,6 +720,8 @@ export default function AdminStudents() {
                       <td className="p-4 text-sm">
                         {student.dateOfBirth ? format(new Date(student.dateOfBirth), 'PP') : "-"}
                       </td>
+                      <td className="p-4 text-sm">{student.numeroOpco || "-"}</td>
+                      <td className="p-4 text-sm">{student.numeroDekra || "-"}</td>
                       <td className="p-4">
                         <div className="flex justify-end gap-1">
                           <Button

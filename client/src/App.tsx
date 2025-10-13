@@ -44,7 +44,7 @@ function Router() {
   );
 }
 
-export default function App() {
+function AppContent() {
   const { isAuthenticated, isLoading } = useAuth();
 
   const sidebarStyle = {
@@ -53,35 +53,41 @@ export default function App() {
   };
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <TooltipProvider>
-          {isLoading || !isAuthenticated ? (
-            <>
-              <Router />
-              <Toaster />
-            </>
-          ) : (
-            <TenantProvider>
-              <SidebarProvider style={sidebarStyle as React.CSSProperties}>
-                <div className="flex h-screen w-full">
-                  <AppSidebar />
-                  <div className="flex flex-col flex-1 overflow-hidden">
-                    <header className="flex items-center justify-between p-2 border-b shrink-0">
-                      <SidebarTrigger data-testid="button-sidebar-toggle" />
-                      <ThemeToggle />
-                    </header>
-                    <main className="flex-1 overflow-auto">
-                      <Router />
-                    </main>
-                  </div>
+    <ThemeProvider>
+      <TooltipProvider>
+        {isLoading || !isAuthenticated ? (
+          <>
+            <Router />
+            <Toaster />
+          </>
+        ) : (
+          <TenantProvider>
+            <SidebarProvider style={sidebarStyle as React.CSSProperties}>
+              <div className="flex h-screen w-full">
+                <AppSidebar />
+                <div className="flex flex-col flex-1 overflow-hidden">
+                  <header className="flex items-center justify-between p-2 border-b shrink-0">
+                    <SidebarTrigger data-testid="button-sidebar-toggle" />
+                    <ThemeToggle />
+                  </header>
+                  <main className="flex-1 overflow-auto">
+                    <Router />
+                  </main>
                 </div>
-              </SidebarProvider>
-            </TenantProvider>
-          )}
-          <Toaster />
-        </TooltipProvider>
-      </ThemeProvider>
+              </div>
+            </SidebarProvider>
+          </TenantProvider>
+        )}
+        <Toaster />
+      </TooltipProvider>
+    </ThemeProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
     </QueryClientProvider>
   );
 }

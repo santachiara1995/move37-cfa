@@ -24,6 +24,7 @@ Core entities:
 - **Tenants**: School configurations with Filiz API credentials
 - **Users**: Staff with role-based permissions
 - **Students**: Student records cached from Filiz API
+- **Entreprises**: Company/employer records with contact information (raison sociale, contact person, tenant-scoped)
 - **Programs**: Training programs (CAP, BTS, etc.) with RNCP codes
 - **Contracts**: Training contracts with status tracking
 - **Devis**: Quote/estimate records
@@ -35,7 +36,7 @@ Core entities:
 ### Key Features
 1. **Dashboard**: 
    - KPIs per school (contracts in progress, OPCO to send, devis pending, RAC overdue)
-   - **Create Dossier**: Quick-create button for schools or students directly from dashboard
+   - **Create Dossier**: Quick-create button for schools or entreprises directly from dashboard (tabbed interface)
 2. **Students Module**: Search, filter, autocomplete for linking to contracts
 3. **Contracts Module**: List view with filters, detail view, CERFA generation
 4. **CERFA PDF Generation**: Fill CERFA 10103*10 forms from contract data using pdf-lib
@@ -90,6 +91,15 @@ Core entities:
 - **AnalystRO**: Read-only access to analytics
 
 ## Recent Changes (October 2025)
+- ✅ **Entreprise Management**: Added full entreprise (company/employer) management system
+  - **Database Schema**: New entreprises table with raison_sociale, nom, prenom, email, phone, tenant-scoped
+  - **Create Dossier Update**: Changed from School/Student to School/Entreprise tabbed interface
+  - **Backend API**: POST /api/admin/entreprises endpoint with validation and audit logging
+  - **Storage Layer**: Full CRUD operations for entreprises
+  - **Client-side Validation**: Toast-based error messages for required fields
+  - **Audit Trail**: All entreprise operations logged with action="create_entreprise"
+  - Fully tested end-to-end with validation scenarios and database verification
+- ✅ **Program Name Correction**: Updated RPMS to "Responsable de Petite et Moyenne Structure" (was "Responsable Point de Vente...")
 - ✅ **CSV Import Feature for Students**: Complete bulk student creation system
   - **Upload & Preview**: CSV file upload with editable preview table
   - **Template Download**: Downloadable CSV template with correct headers
@@ -103,10 +113,10 @@ Core entities:
   - **Audit Logging**: Bulk import actions logged with student count and tenant distribution
   - Fully tested end-to-end with validation scenarios
 - ✅ **Tenant Switcher Fix**: Auto-update user access to all active schools on every login
-- ✅ **Create Dossier Feature**: Quick-create dialog on dashboard for schools and students with tabbed interface
+- ✅ **Create Dossier Feature**: Quick-create dialog on dashboard for schools and entreprises with tabbed interface
   - **Bug Fix**: Resolved user auto-creation issue - all Replit Auth users now automatically get OpsAdmin role
   - **Bug Fix**: Fixed apiRequest parameter order in mutations (method, url, data)
-  - Fully tested end-to-end with successful school/student creation
+  - Fully tested end-to-end with successful school/entreprise creation
 - ✅ Added Programs table to database schema (training programs with RNCP codes)
 - ✅ Built complete Admin Panel with five modules:
   - Schools Management: CRUD operations for tenants/schools

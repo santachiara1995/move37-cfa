@@ -49,11 +49,12 @@ export default function Dashboard() {
   });
 
   const createSchoolMutation = useMutation({
-    mutationFn: async (data: any) => apiRequest("/api/admin/schools", "POST", data),
+    mutationFn: async (data: any) => apiRequest("POST", "/api/admin/schools", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/schools"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tenants"] });
       setIsDialogOpen(false);
+      setIsSchoolActive(true);
       toast({ title: "Success", description: "School created successfully" });
     },
     onError: () => {
@@ -62,7 +63,7 @@ export default function Dashboard() {
   });
 
   const createStudentMutation = useMutation({
-    mutationFn: async (data: any) => apiRequest("/api/admin/students", "POST", data),
+    mutationFn: async (data: any) => apiRequest("POST", "/api/admin/students", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/students"] });
       // Invalidate all dashboard KPI queries

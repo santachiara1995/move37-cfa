@@ -33,7 +33,9 @@ Core entities:
 - **Audit Logs**: Immutable compliance trail
 
 ### Key Features
-1. **Dashboard**: KPIs per school (contracts in progress, OPCO to send, devis pending, RAC overdue)
+1. **Dashboard**: 
+   - KPIs per school (contracts in progress, OPCO to send, devis pending, RAC overdue)
+   - **Create Dossier**: Quick-create button for schools or students directly from dashboard
 2. **Students Module**: Search, filter, autocomplete for linking to contracts
 3. **Contracts Module**: List view with filters, detail view, CERFA generation
 4. **CERFA PDF Generation**: Fill CERFA 10103*10 forms from contract data using pdf-lib
@@ -88,6 +90,7 @@ Core entities:
 - **AnalystRO**: Read-only access to analytics
 
 ## Recent Changes (October 2025)
+- ✅ **Create Dossier Feature**: Quick-create dialog on dashboard for schools and students with tabbed interface
 - ✅ Added Programs table to database schema (training programs with RNCP codes)
 - ✅ Built complete Admin Panel with five modules:
   - Schools Management: CRUD operations for tenants/schools

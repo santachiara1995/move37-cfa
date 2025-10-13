@@ -43,7 +43,7 @@ Core entities:
 6. **Audit Logs**: Comprehensive activity tracking for compliance
 7. **Admin Panel** (OpsAdmin only):
    - Schools Management: Add/edit/delete schools with Filiz API configuration + CSV export
-   - Students Management: Add/edit/delete students across all schools + CSV export
+   - Students Management: Add/edit/delete students across all schools + CSV export + **CSV import**
    - Programs Management: Add/edit/delete training programs with RNCP codes + CSV export
    - Users Management: Add/edit/delete users with role and school access control
    - Activity Dashboard: Recent admin actions with statistics and filtering
@@ -90,6 +90,19 @@ Core entities:
 - **AnalystRO**: Read-only access to analytics
 
 ## Recent Changes (October 2025)
+- ✅ **CSV Import Feature for Students**: Complete bulk student creation system
+  - **Upload & Preview**: CSV file upload with editable preview table
+  - **Template Download**: Downloadable CSV template with correct headers
+  - **Smart Validation**: 
+    - School matching by name or slug (e.g., "École Paris Nord" or "paris-nord")
+    - Date format validation (YYYY-MM-DD) with inline error feedback
+    - Required field validation (firstName, lastName, school)
+    - Visual indicators (red borders) for invalid data
+  - **Bulk Import API**: POST /api/admin/students/bulk endpoint with batch processing
+  - **Error Handling**: Clear toast messages for validation errors, prevents crashes on invalid dates
+  - **Audit Logging**: Bulk import actions logged with student count and tenant distribution
+  - Fully tested end-to-end with validation scenarios
+- ✅ **Tenant Switcher Fix**: Auto-update user access to all active schools on every login
 - ✅ **Create Dossier Feature**: Quick-create dialog on dashboard for schools and students with tabbed interface
   - **Bug Fix**: Resolved user auto-creation issue - all Replit Auth users now automatically get OpsAdmin role
   - **Bug Fix**: Fixed apiRequest parameter order in mutations (method, url, data)
@@ -97,7 +110,7 @@ Core entities:
 - ✅ Added Programs table to database schema (training programs with RNCP codes)
 - ✅ Built complete Admin Panel with five modules:
   - Schools Management: CRUD operations for tenants/schools
-  - Students Management: Cross-school student management with search/filter
+  - Students Management: Cross-school student management with search/filter + CSV import
   - Programs Management: Training programs (CAP, BTS, etc.) with metadata
   - Users Management: OpsAdmins can manage users, roles, and school access
   - Activity Dashboard: Recent administrative actions from audit logs with stats

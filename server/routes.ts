@@ -796,6 +796,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/admin/students/bulk", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { students } = req.body;
+
+      if (!Array.isArray(students) || students.length === 0) {
+        return res.status(400).json({ message: "Invalid request: students array required" });
+      }
+
+      // Validate all students
+      const validatedStudents = [];
+      const errors = [];
+      
+      for (let i = 0; i < students.length; i++) {
+        const validation = insertStudentSchema.safeParse(students[i]);
+        if (!validation.success) {
+          errors.push({ index: i, errors: validation.error.errors });
+        } else {
+          validatedStudents.push(validation.data);
+        }
+      }
+
+      if (errors.length > 0) {
+        return res.status(400).json({ 
+          message: "Some students have validation errors", 
+          errors 
+        });
+      }
+
+      // Create all students
+      const createdStudents = [];
+      for (const studentData of validatedStudents) {
+        const student = await storage.createStudent(studentData);
+        createdStudents.push(student);
+      }
+
+      // Log bulk import action
+      await createAuditLog(
+        userId,
+        "system",
+        "bulk_import_students",
+        "student",
+        "bulk",
+        { 
+          count: createdStudents.length,
+          tenantIds: Array.from(new Set(createdStudents.map(s => s.tenantId)))
+        },
+        req
+      );
+
+      res.json({ 
+        success: true, 
+        count: createdStudents.length, 
+        students: createdStudents 
+      });
+    } catch (error) {
+      console.error("Error bulk importing students:", error);
+      res.status(500).json({ message: "Failed to bulk import students" });
+    }
+  });
+
   app.put("/api/admin/students/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;

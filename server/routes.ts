@@ -5,7 +5,12 @@ import { setupAuth, isAuthenticated, requireRole } from "./replitAuth";
 import { FilizAdapter } from "./filizAdapter";
 import { cerfaService } from "./cerfaService";
 import { objectStorage } from "./objectStorage";
-import type { Tenant } from "@shared/schema";
+import { 
+  insertTenantSchema, 
+  insertStudentSchema, 
+  insertProgramSchema,
+  type Tenant 
+} from "@shared/schema";
 
 // Helper to create audit log
 async function createAuditLog(
@@ -486,6 +491,338 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching audit logs:", error);
       res.status(500).json({ message: "Failed to fetch audit logs" });
+    }
+  });
+
+  // ========== ADMIN ROUTES (OpsAdmin only) ==========
+  
+  // Schools Management
+  app.get("/api/admin/schools", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const schools = await storage.getAllTenants();
+      res.json(schools);
+    } catch (error) {
+      console.error("Error fetching schools:", error);
+      res.status(500).json({ message: "Failed to fetch schools" });
+    }
+  });
+
+  app.post("/api/admin/schools", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      const validation = insertTenantSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: validation.error.errors 
+        });
+      }
+      
+      const school = await storage.createTenant(validation.data);
+      
+      await createAuditLog(
+        userId,
+        school.id,
+        "create_school",
+        "tenant",
+        school.id,
+        { name: school.name, slug: school.slug },
+        req
+      );
+      
+      res.json(school);
+    } catch (error) {
+      console.error("Error creating school:", error);
+      res.status(500).json({ message: "Failed to create school" });
+    }
+  });
+
+  app.put("/api/admin/schools/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      const existingSchool = await storage.getTenant(req.params.id);
+      if (!existingSchool) {
+        return res.status(404).json({ message: "School not found" });
+      }
+      
+      const validation = insertTenantSchema.partial().safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: validation.error.errors 
+        });
+      }
+      
+      const school = await storage.updateTenant(req.params.id, validation.data);
+      
+      await createAuditLog(
+        userId,
+        school.id,
+        "update_school",
+        "tenant",
+        school.id,
+        req.body,
+        req
+      );
+      
+      res.json(school);
+    } catch (error) {
+      console.error("Error updating school:", error);
+      res.status(500).json({ message: "Failed to update school" });
+    }
+  });
+
+  app.delete("/api/admin/schools/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      const existingSchool = await storage.getTenant(req.params.id);
+      if (!existingSchool) {
+        return res.status(404).json({ message: "School not found" });
+      }
+      
+      await storage.deleteTenant(req.params.id);
+      
+      await createAuditLog(
+        userId,
+        existingSchool.id,
+        "delete_school",
+        "tenant",
+        existingSchool.id,
+        { name: existingSchool.name },
+        req
+      );
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting school:", error);
+      res.status(500).json({ message: "Failed to delete school" });
+    }
+  });
+
+  // Students Management
+  app.get("/api/admin/students", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const tenants = await storage.getAllTenants();
+      let allStudents: any[] = [];
+      
+      for (const tenant of tenants) {
+        const students = await storage.getStudents(tenant.id);
+        allStudents = [...allStudents, ...students];
+      }
+      
+      res.json(allStudents);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+      res.status(500).json({ message: "Failed to fetch students" });
+    }
+  });
+
+  app.post("/api/admin/students", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      const validation = insertStudentSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: validation.error.errors 
+        });
+      }
+      
+      const student = await storage.createStudent(validation.data);
+      
+      await createAuditLog(
+        userId,
+        student.tenantId,
+        "create_student",
+        "student",
+        student.id,
+        { name: `${student.firstName} ${student.lastName}` },
+        req
+      );
+      
+      res.json(student);
+    } catch (error) {
+      console.error("Error creating student:", error);
+      res.status(500).json({ message: "Failed to create student" });
+    }
+  });
+
+  app.put("/api/admin/students/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      const existingStudent = await storage.getStudentById(req.params.id);
+      if (!existingStudent) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+      
+      const validation = insertStudentSchema.partial().safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: validation.error.errors 
+        });
+      }
+      
+      const student = await storage.updateStudent(req.params.id, validation.data);
+      
+      await createAuditLog(
+        userId,
+        student.tenantId,
+        "update_student",
+        "student",
+        student.id,
+        req.body,
+        req
+      );
+      
+      res.json(student);
+    } catch (error) {
+      console.error("Error updating student:", error);
+      res.status(500).json({ message: "Failed to update student" });
+    }
+  });
+
+  app.delete("/api/admin/students/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      const student = await storage.getStudentById(req.params.id);
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+      
+      await storage.deleteStudent(req.params.id);
+      
+      await createAuditLog(
+        userId,
+        student.tenantId,
+        "delete_student",
+        "student",
+        req.params.id,
+        { name: `${student.firstName} ${student.lastName}` },
+        req
+      );
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting student:", error);
+      res.status(500).json({ message: "Failed to delete student" });
+    }
+  });
+
+  // Programs Management
+  app.get("/api/admin/programs", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const tenants = await storage.getAllTenants();
+      let allPrograms: any[] = [];
+      
+      for (const tenant of tenants) {
+        const programs = await storage.getPrograms(tenant.id);
+        allPrograms = [...allPrograms, ...programs];
+      }
+      
+      res.json(allPrograms);
+    } catch (error) {
+      console.error("Error fetching programs:", error);
+      res.status(500).json({ message: "Failed to fetch programs" });
+    }
+  });
+
+  app.post("/api/admin/programs", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      const validation = insertProgramSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: validation.error.errors 
+        });
+      }
+      
+      const program = await storage.createProgram(validation.data);
+      
+      await createAuditLog(
+        userId,
+        program.tenantId,
+        "create_program",
+        "program",
+        program.id,
+        { name: program.name },
+        req
+      );
+      
+      res.json(program);
+    } catch (error) {
+      console.error("Error creating program:", error);
+      res.status(500).json({ message: "Failed to create program" });
+    }
+  });
+
+  app.put("/api/admin/programs/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      const existingProgram = await storage.getProgramById(req.params.id);
+      if (!existingProgram) {
+        return res.status(404).json({ message: "Program not found" });
+      }
+      
+      const validation = insertProgramSchema.partial().safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: validation.error.errors 
+        });
+      }
+      
+      const program = await storage.updateProgram(req.params.id, validation.data);
+      
+      await createAuditLog(
+        userId,
+        program.tenantId,
+        "update_program",
+        "program",
+        program.id,
+        req.body,
+        req
+      );
+      
+      res.json(program);
+    } catch (error) {
+      console.error("Error updating program:", error);
+      res.status(500).json({ message: "Failed to update program" });
+    }
+  });
+
+  app.delete("/api/admin/programs/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      const program = await storage.getProgramById(req.params.id);
+      if (!program) {
+        return res.status(404).json({ message: "Program not found" });
+      }
+      
+      await storage.deleteProgram(req.params.id);
+      
+      await createAuditLog(
+        userId,
+        program.tenantId,
+        "delete_program",
+        "program",
+        req.params.id,
+        { name: program.name },
+        req
+      );
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting program:", error);
+      res.status(500).json({ message: "Failed to delete program" });
     }
   });
 

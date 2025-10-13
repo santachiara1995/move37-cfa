@@ -8,6 +8,7 @@ import {
   rac,
   cerfaPdfs,
   auditLogs,
+  programs,
   type User,
   type UpsertUser,
   type Tenant,
@@ -26,6 +27,8 @@ import {
   type InsertCerfaPdf,
   type AuditLog,
   type InsertAuditLog,
+  type Program,
+  type InsertProgram,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, like, or, desc } from "drizzle-orm";
@@ -38,14 +41,27 @@ export interface IStorage {
 
   // Tenant operations
   getTenants(): Promise<Tenant[]>;
+  getAllTenants(): Promise<Tenant[]>;
   getTenant(id: string): Promise<Tenant | undefined>;
   createTenant(tenant: InsertTenant): Promise<Tenant>;
+  updateTenant(id: string, tenant: Partial<InsertTenant>): Promise<Tenant>;
+  deleteTenant(id: string): Promise<void>;
 
   // Student operations
   getStudents(tenantId: string): Promise<Student[]>;
   searchStudents(tenantId: string, query: string): Promise<Student[]>;
   getStudent(id: string): Promise<Student | undefined>;
+  getStudentById(id: string): Promise<Student | undefined>;
   createStudent(student: InsertStudent): Promise<Student>;
+  updateStudent(id: string, student: Partial<InsertStudent>): Promise<Student>;
+  deleteStudent(id: string): Promise<void>;
+
+  // Program operations
+  getPrograms(tenantId: string): Promise<Program[]>;
+  getProgramById(id: string): Promise<Program | undefined>;
+  createProgram(program: InsertProgram): Promise<Program>;
+  updateProgram(id: string, program: Partial<InsertProgram>): Promise<Program>;
+  deleteProgram(id: string): Promise<void>;
 
   // Contract operations
   getContracts(tenantId: string, statusFilter?: string): Promise<Contract[]>;
@@ -103,6 +119,10 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(tenants).where(eq(tenants.isActive, true));
   }
 
+  async getAllTenants(): Promise<Tenant[]> {
+    return await db.select().from(tenants);
+  }
+
   async getTenant(id: string): Promise<Tenant | undefined> {
     const [tenant] = await db.select().from(tenants).where(eq(tenants.id, id));
     return tenant;
@@ -111,6 +131,19 @@ export class DatabaseStorage implements IStorage {
   async createTenant(tenantData: InsertTenant): Promise<Tenant> {
     const [tenant] = await db.insert(tenants).values(tenantData).returning();
     return tenant;
+  }
+
+  async updateTenant(id: string, tenantData: Partial<InsertTenant>): Promise<Tenant> {
+    const [tenant] = await db
+      .update(tenants)
+      .set({ ...tenantData, updatedAt: new Date() })
+      .where(eq(tenants.id, id))
+      .returning();
+    return tenant;
+  }
+
+  async deleteTenant(id: string): Promise<void> {
+    await db.delete(tenants).where(eq(tenants.id, id));
   }
 
   // Student operations
@@ -143,9 +176,59 @@ export class DatabaseStorage implements IStorage {
     return student;
   }
 
+  async getStudentById(id: string): Promise<Student | undefined> {
+    const [student] = await db.select().from(students).where(eq(students.id, id));
+    return student;
+  }
+
   async createStudent(studentData: InsertStudent): Promise<Student> {
     const [student] = await db.insert(students).values(studentData).returning();
     return student;
+  }
+
+  async updateStudent(id: string, studentData: Partial<InsertStudent>): Promise<Student> {
+    const [student] = await db
+      .update(students)
+      .set({ ...studentData, updatedAt: new Date() })
+      .where(eq(students.id, id))
+      .returning();
+    return student;
+  }
+
+  async deleteStudent(id: string): Promise<void> {
+    await db.delete(students).where(eq(students.id, id));
+  }
+
+  // Program operations
+  async getPrograms(tenantId: string): Promise<Program[]> {
+    return await db
+      .select()
+      .from(programs)
+      .where(eq(programs.tenantId, tenantId))
+      .orderBy(desc(programs.createdAt));
+  }
+
+  async getProgramById(id: string): Promise<Program | undefined> {
+    const [program] = await db.select().from(programs).where(eq(programs.id, id));
+    return program;
+  }
+
+  async createProgram(programData: InsertProgram): Promise<Program> {
+    const [program] = await db.insert(programs).values(programData).returning();
+    return program;
+  }
+
+  async updateProgram(id: string, programData: Partial<InsertProgram>): Promise<Program> {
+    const [program] = await db
+      .update(programs)
+      .set({ ...programData, updatedAt: new Date() })
+      .where(eq(programs.id, id))
+      .returning();
+    return program;
+  }
+
+  async deleteProgram(id: string): Promise<void> {
+    await db.delete(programs).where(eq(programs.id, id));
   }
 
   // Contract operations

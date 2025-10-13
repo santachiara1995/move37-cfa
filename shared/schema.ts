@@ -243,6 +243,36 @@ export type InsertCerfaPdf = z.infer<typeof insertCerfaPdfSchema>;
 export type CerfaPdf = typeof cerfaPdfs.$inferSelect;
 
 // ============================================================================
+// TRAINING PROGRAMS
+// ============================================================================
+
+export const programs = pgTable("programs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  filizId: varchar("filiz_id"), // External ID from Filiz API
+  name: varchar("name").notNull(), // e.g., "CAP Pâtisserie"
+  code: varchar("code"), // Program code
+  level: varchar("level"), // e.g., "CAP", "BTS", "Licence Pro"
+  duration: integer("duration"), // Duration in months
+  rncpCode: varchar("rncp_code"), // RNCP certification code
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  cachedData: jsonb("cached_data"), // Full cached data from Filiz API
+  lastSyncedAt: timestamp("last_synced_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertProgramSchema = createInsertSchema(programs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertProgram = z.infer<typeof insertProgramSchema>;
+export type Program = typeof programs.$inferSelect;
+
+// ============================================================================
 // AUDIT LOGS
 // ============================================================================
 

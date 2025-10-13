@@ -6,6 +6,9 @@ import {
   Building2,
   Receipt,
   Shield,
+  Settings,
+  UserCog,
+  GraduationCap,
 } from "lucide-react";
 import {
   Sidebar,
@@ -79,6 +82,27 @@ const menuItems = [
   },
 ];
 
+const adminMenuItems = [
+  {
+    title: "Schools",
+    url: "/admin/schools",
+    icon: Building2,
+    testId: "nav-admin-schools",
+  },
+  {
+    title: "Students",
+    url: "/admin/students",
+    icon: UserCog,
+    testId: "nav-admin-students",
+  },
+  {
+    title: "Programs",
+    url: "/admin/programs",
+    icon: GraduationCap,
+    testId: "nav-admin-programs",
+  },
+];
+
 export function AppSidebar() {
   const [location] = useLocation();
   const { user } = useAuth();
@@ -133,6 +157,32 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {user?.role === "OpsAdmin" && (
+          <SidebarGroup>
+            <SidebarGroupLabel>
+              <Settings className="h-4 w-4 mr-1 inline" />
+              Administration
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminMenuItems.map((item) => {
+                  const isActive = location === item.url;
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        <Link href={item.url} data-testid={item.testId}>
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter className="border-t p-2">
         <DropdownMenu>

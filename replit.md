@@ -24,6 +24,7 @@ Core entities:
 - **Tenants**: School configurations with Filiz API credentials
 - **Users**: Staff with role-based permissions
 - **Students**: Student records cached from Filiz API
+- **Programs**: Training programs (CAP, BTS, etc.) with RNCP codes
 - **Contracts**: Training contracts with status tracking
 - **Devis**: Quote/estimate records
 - **OPCO**: OPCO submission tracking
@@ -38,7 +39,11 @@ Core entities:
 4. **CERFA PDF Generation**: Fill CERFA 10103*10 forms from contract data using pdf-lib
 5. **Devis/OPCO/RAC**: Read-only tables with CSV export capability
 6. **Audit Logs**: Comprehensive activity tracking for compliance
-7. **FilizAdapter**: Abstraction layer for all Filiz API interactions
+7. **Admin Panel** (OpsAdmin only):
+   - Schools Management: Add/edit/delete schools with Filiz API configuration
+   - Students Management: Add/edit/delete students across all schools
+   - Programs Management: Add/edit/delete training programs with RNCP codes
+8. **FilizAdapter**: Abstraction layer for all Filiz API interactions
 
 ## Development Status
 **Phase 1 (Completed)**: Schema & Frontend
@@ -76,17 +81,22 @@ Core entities:
 - **Status Colors**: Success (green), Warning (yellow), Danger (red), Info (blue)
 
 ## User Roles
-- **OpsAdmin**: Full access including audit logs
+- **OpsAdmin**: Full access including audit logs and admin panel (schools, students, programs management)
 - **BillingOps**: Contract and financial data access
 - **AnalystRO**: Read-only access to analytics
 
-## Recent Changes
-- Created complete database schema with 9 core tables
-- Built all frontend components and pages
-- Implemented tenant context and switcher
-- Added dark mode support with theme toggle
-- Created authentication flow with Replit Auth integration
-- Designed responsive layouts for all modules
+## Recent Changes (October 2025)
+- ✅ Added Programs table to database schema (training programs with RNCP codes)
+- ✅ Built complete Admin Panel with three modules:
+  - Schools Management: CRUD operations for tenants/schools
+  - Students Management: Cross-school student management with search/filter
+  - Programs Management: Training programs (CAP, BTS, etc.) with metadata
+- ✅ Added admin routes with OpsAdmin role restriction
+- ✅ Updated sidebar navigation with admin section (visible to OpsAdmin only)
+- ✅ Implemented all storage methods for programs, tenant updates/deletes, student updates/deletes
+- ✅ Added audit logging for all admin operations
+- ✅ Integrated Filiz API documentation research (https://documentation.filiz.io/)
+- ✅ Created CERFA 10103*10 field mapping system (181 form fields analyzed)
 
 ## Next Steps
 1. Implement database migrations

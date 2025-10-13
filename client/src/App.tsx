@@ -17,6 +17,9 @@ import DevisPage from "@/pages/devis";
 import OpcoPage from "@/pages/opco";
 import RacPage from "@/pages/rac";
 import AuditLogs from "@/pages/audit-logs";
+import AdminSchools from "@/pages/admin-schools";
+import AdminStudents from "@/pages/admin-students";
+import AdminPrograms from "@/pages/admin-programs";
 import NotFound from "@/pages/not-found";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -37,6 +40,9 @@ function Router() {
           <Route path="/opco" component={OpcoPage} />
           <Route path="/rac" component={RacPage} />
           <Route path="/audit" component={AuditLogs} />
+          <Route path="/admin/schools" component={AdminSchools} />
+          <Route path="/admin/students" component={AdminStudents} />
+          <Route path="/admin/programs" component={AdminPrograms} />
         </>
       )}
       <Route component={NotFound} />

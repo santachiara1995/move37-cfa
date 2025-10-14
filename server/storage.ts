@@ -34,7 +34,7 @@ import {
   type InsertProgram,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, like, or, desc } from "drizzle-orm";
+import { eq, and, like, or, desc, sql } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -43,6 +43,7 @@ export interface IStorage {
   getAllUsers(): Promise<User[]>;
   upsertUser(user: UpsertUser): Promise<User>;
   deleteUser(id: string): Promise<void>;
+  createFirstUserAtomically(user: UpsertUser): Promise<{ created: boolean; role: string }>;
 
   // Tenant operations
   getTenants(): Promise<Tenant[]>;
@@ -132,6 +133,52 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: string): Promise<void> {
     await db.delete(users).where(eq(users.id, id));
+  }
+
+  async createFirstUserAtomically(userData: UpsertUser): Promise<{ created: boolean; role: string }> {
+    // Use PostgreSQL advisory lock to ensure atomicity
+    // Lock ID: 7777 (arbitrary number for "first user creation" operation)
+    const result = await db.transaction(async (tx) => {
+      // Acquire advisory lock - this will wait if another transaction holds it
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(7777)`);
+      
+      // Check if user already exists
+      const existingUser = await tx.select().from(users).where(eq(users.id, userData.id)).limit(1);
+      
+      if (existingUser.length > 0) {
+        // User already exists, return their current role
+        return { created: false, role: existingUser[0].role };
+      }
+      
+      // Check if any OpsAdmin exists
+      const allExistingUsers = await tx.select().from(users);
+      const hasOpsAdmin = allExistingUsers.some(u => u.role === "OpsAdmin");
+      
+      let finalRole: string;
+      let finalTenantIds: string[];
+      
+      if (!hasOpsAdmin) {
+        // No OpsAdmin exists - make this user the first admin
+        const allTenants = await tx.select().from(tenants);
+        finalRole = "OpsAdmin";
+        finalTenantIds = allTenants.map(t => t.id);
+      } else {
+        // OpsAdmin exists - create with limited access
+        finalRole = "AnalystRO";
+        finalTenantIds = [];
+      }
+      
+      // Create the user with the determined role and tenants
+      await tx.insert(users).values({
+        ...userData,
+        role: finalRole,
+        tenantIds: finalTenantIds,
+      });
+      
+      return { created: true, role: finalRole };
+    });
+    
+    return result;
   }
 
   // Tenant operations

@@ -98,6 +98,8 @@ Core entities:
   - Hook useAuth mis à jour pour utiliser Clerk
   - Requiert CLERK_PUBLISHABLE_KEY et CLERK_SECRET_KEY dans les secrets Replit
   - Interface de connexion/inscription en français
+  - **Sécurité**: Premier utilisateur auto-promu OpsAdmin (atomique via PostgreSQL advisory lock), utilisateurs suivants reçoivent AnalystRO sans accès aux tenants
+  - **Garantie atomique**: Utilise `pg_advisory_xact_lock` pour garantir qu'un seul OpsAdmin peut être créé, même avec inscriptions simultanées
 - ✅ **Rebranding "0 à 1 Formation"**: Application renommée
   - Nom de l'app changé de "Filiz Admin" → "0 à 1 Formation"
   - Icône d'en-tête changée: Building2 → School (icône d'école)

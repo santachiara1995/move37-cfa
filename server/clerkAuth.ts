@@ -34,7 +34,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 };
 
 // Middleware to sync Clerk user with database
-// First user becomes OpsAdmin, subsequent users require manual role assignment
+// First user becomes OpsAdmin (atomically), subsequent users require manual role assignment
 export const syncClerkUser: RequestHandler = async (req, res, next) => {
   const auth = getAuth(req);
   
@@ -45,50 +45,24 @@ export const syncClerkUser: RequestHandler = async (req, res, next) => {
   try {
     const userId = auth.userId;
     
-    // Check if user already exists in database
-    const existingUser = await storage.getUser(userId);
+    // Use atomic first-user creation to prevent race conditions
+    // This uses PostgreSQL advisory locks to ensure only one OpsAdmin is ever created
+    const result = await storage.createFirstUserAtomically({
+      id: userId,
+      email: auth.sessionClaims?.email as string || `user-${userId}@example.com`,
+      firstName: auth.sessionClaims?.firstName as string || null,
+      lastName: auth.sessionClaims?.lastName as string || null,
+      profileImageUrl: auth.sessionClaims?.imageUrl as string || null,
+      role: "AnalystRO", // Will be overridden to OpsAdmin if first user
+      tenantIds: [], // Will be populated if first user
+    });
     
-    if (existingUser) {
-      // User already exists, just continue
-      next();
-      return;
-    }
-    
-    // New user - check if any OpsAdmin already exists in the system
-    // This prevents race conditions by checking for admin existence, not total user count
-    const allUsers = await storage.getAllUsers();
-    const hasOpsAdmin = allUsers.some(u => u.role === "OpsAdmin");
-    
-    if (!hasOpsAdmin) {
-      // No OpsAdmin exists - make this user the first admin
-      const allTenants = await storage.getTenants();
-      const tenantIds = allTenants.map((t) => t.id);
-      
-      await storage.upsertUser({
-        id: userId,
-        email: auth.sessionClaims?.email as string || `user-${userId}@example.com`,
-        firstName: auth.sessionClaims?.firstName as string || null,
-        lastName: auth.sessionClaims?.lastName as string || null,
-        profileImageUrl: auth.sessionClaims?.imageUrl as string || null,
-        role: "OpsAdmin", // First admin user
-        tenantIds, // Access to all tenants
-      });
-      
-      console.log(`✅ First OpsAdmin created: ${auth.sessionClaims?.email}`);
-    } else {
-      // OpsAdmin exists - create user with minimal access
-      // An OpsAdmin must manually assign role and tenants via the admin panel
-      await storage.upsertUser({
-        id: userId,
-        email: auth.sessionClaims?.email as string || `user-${userId}@example.com`,
-        firstName: auth.sessionClaims?.firstName as string || null,
-        lastName: auth.sessionClaims?.lastName as string || null,
-        profileImageUrl: auth.sessionClaims?.imageUrl as string || null,
-        role: "AnalystRO", // Default to read-only role
-        tenantIds: [], // No tenant access by default - admin must assign
-      });
-      
-      console.log(`⚠️  New user created with limited access: ${auth.sessionClaims?.email}. An OpsAdmin must assign proper role and tenants.`);
+    if (result.created) {
+      if (result.role === "OpsAdmin") {
+        console.log(`✅ First OpsAdmin created: ${auth.sessionClaims?.email}`);
+      } else {
+        console.log(`⚠️  New user created with limited access: ${auth.sessionClaims?.email}. An OpsAdmin must assign proper role and tenants.`);
+      }
     }
     
     next();

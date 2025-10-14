@@ -8,7 +8,7 @@ Internal, multi-tenant administration platform for managing three schools (0 à 
 - **Backend**: Node.js + Express (TypeScript)
 - **Database**: PostgreSQL (via Replit) with Drizzle ORM
 - **Storage**: Replit Object Storage for PDF documents
-- **Auth**: Replit Auth with OIDC
+- **Auth**: Clerk Authentication (migrated from Replit Auth)
 - **PDF Generation**: pdf-lib
 
 ## Architecture
@@ -91,11 +91,19 @@ Core entities:
 - **AnalystRO**: Read-only access to analytics
 
 ## Recent Changes (October 2025)
+- ✅ **Migration vers Clerk Authentication**: Système d'authentification modernisé
+  - Migration complète de Replit Auth vers Clerk
+  - Frontend: ClerkProvider, SignInButton, SignUpButton, UserButton
+  - Backend: @clerk/express middleware avec gestion des clés API
+  - Hook useAuth mis à jour pour utiliser Clerk
+  - Requiert CLERK_PUBLISHABLE_KEY et CLERK_SECRET_KEY dans les secrets Replit
+  - Interface de connexion/inscription en français
 - ✅ **Rebranding "0 à 1 Formation"**: Application renommée
   - Nom de l'app changé de "Filiz Admin" → "0 à 1 Formation"
   - Icône d'en-tête changée: Building2 → School (icône d'école)
   - Titre HTML mis à jour
   - Branding cohérent sur toutes les pages
+  - Boutons "Get Started" → "Commencer", "Log in" → "Connexion"
 - ✅ **Traduction Complète en Français**: Interface entièrement traduite
   - Pages traduites: Dashboard, Landing, Students, Contracts, Devis, OPCO, RAC, Audit Logs, Contract Detail, Not Found
   - Composants traduits: AppSidebar (avec icône School), TenantSwitcher

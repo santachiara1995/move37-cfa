@@ -4,8 +4,22 @@ import { storage } from "./storage";
 
 // Configure Clerk middleware
 export async function setupClerkAuth(app: Express) {
+  const publishableKey = process.env.CLERK_PUBLISHABLE_KEY;
+  const secretKey = process.env.CLERK_SECRET_KEY;
+
+  if (!publishableKey || !secretKey) {
+    console.warn("⚠️  Clerk keys not configured. Please add CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY to your secrets.");
+    console.warn("⚠️  Authentication will not work until these keys are provided.");
+    return;
+  }
+
   // Add Clerk middleware to all routes
-  app.use(clerkMiddleware());
+  app.use(
+    clerkMiddleware({
+      publishableKey,
+      secretKey,
+    })
+  );
 }
 
 // Middleware to check if user is authenticated
@@ -19,7 +33,8 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   next();
 };
 
-// Middleware to sync Clerk user with database and ensure access to all tenants
+// Middleware to sync Clerk user with database
+// First user becomes OpsAdmin, subsequent users require manual role assignment
 export const syncClerkUser: RequestHandler = async (req, res, next) => {
   const auth = getAuth(req);
   
@@ -28,24 +43,53 @@ export const syncClerkUser: RequestHandler = async (req, res, next) => {
   }
 
   try {
-    // Get user info from Clerk
     const userId = auth.userId;
     
-    // Get all active tenants to ensure user always has access to current schools
-    const allTenants = await storage.getTenants();
-    const tenantIds = allTenants.map((t) => t.id);
+    // Check if user already exists in database
+    const existingUser = await storage.getUser(userId);
     
-    // Upsert user in database with access to all tenants
-    // For Clerk, we'll use their user ID and get additional info from Clerk's User object
-    await storage.upsertUser({
-      id: userId,
-      email: auth.sessionClaims?.email as string || `user-${userId}@example.com`,
-      firstName: auth.sessionClaims?.firstName as string || null,
-      lastName: auth.sessionClaims?.lastName as string || null,
-      profileImageUrl: auth.sessionClaims?.imageUrl as string || null,
-      role: "OpsAdmin", // Default role - grants full access
-      tenantIds, // Grant access to all current active tenants
-    });
+    if (existingUser) {
+      // User already exists, just continue
+      next();
+      return;
+    }
+    
+    // New user - check if any OpsAdmin already exists in the system
+    // This prevents race conditions by checking for admin existence, not total user count
+    const allUsers = await storage.getAllUsers();
+    const hasOpsAdmin = allUsers.some(u => u.role === "OpsAdmin");
+    
+    if (!hasOpsAdmin) {
+      // No OpsAdmin exists - make this user the first admin
+      const allTenants = await storage.getTenants();
+      const tenantIds = allTenants.map((t) => t.id);
+      
+      await storage.upsertUser({
+        id: userId,
+        email: auth.sessionClaims?.email as string || `user-${userId}@example.com`,
+        firstName: auth.sessionClaims?.firstName as string || null,
+        lastName: auth.sessionClaims?.lastName as string || null,
+        profileImageUrl: auth.sessionClaims?.imageUrl as string || null,
+        role: "OpsAdmin", // First admin user
+        tenantIds, // Access to all tenants
+      });
+      
+      console.log(`✅ First OpsAdmin created: ${auth.sessionClaims?.email}`);
+    } else {
+      // OpsAdmin exists - create user with minimal access
+      // An OpsAdmin must manually assign role and tenants via the admin panel
+      await storage.upsertUser({
+        id: userId,
+        email: auth.sessionClaims?.email as string || `user-${userId}@example.com`,
+        firstName: auth.sessionClaims?.firstName as string || null,
+        lastName: auth.sessionClaims?.lastName as string || null,
+        profileImageUrl: auth.sessionClaims?.imageUrl as string || null,
+        role: "AnalystRO", // Default to read-only role
+        tenantIds: [], // No tenant access by default - admin must assign
+      });
+      
+      console.log(`⚠️  New user created with limited access: ${auth.sessionClaims?.email}. An OpsAdmin must assign proper role and tenants.`);
+    }
     
     next();
   } catch (error) {

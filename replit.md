@@ -91,6 +91,11 @@ Core entities:
 - **AnalystRO**: Read-only access to analytics
 
 ## Recent Changes (October 2025)
+- ✅ **Traduction Complète en Français**: Interface entièrement traduite
+  - Pages traduites: Dashboard, Students, Contracts, Devis, OPCO, RAC
+  - Composants traduits: AppSidebar, TenantSwitcher, Landing
+  - Navigation et messages d'erreur en français
+  - Tous les labels, boutons, titres et descriptions
 - ✅ **Entreprise Management**: Added full entreprise (company/employer) management system
   - **Database Schema**: New entreprises table with raison_sociale, nom, prenom, email, phone, tenant-scoped
   - **Create Dossier Update**: Changed from School/Student to School/Entreprise tabbed interface

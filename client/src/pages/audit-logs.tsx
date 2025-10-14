@@ -22,8 +22,8 @@ export default function AuditLogs() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Non Autorisé",
+        description: "Vous êtes déconnecté. Reconnexion...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -45,7 +45,7 @@ export default function AuditLogs() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">Chargement...</p>
         </div>
       </div>
     );
@@ -57,9 +57,9 @@ export default function AuditLogs() {
         <Card>
           <CardContent className="p-8 text-center">
             <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Access Restricted</h3>
+            <h3 className="text-lg font-semibold mb-2">Accès Restreint</h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Audit logs are only accessible to OpsAdmin users for compliance and security purposes.
+              Les journaux d'audit sont accessibles uniquement aux utilisateurs OpsAdmin pour des raisons de conformité et de sécurité.
             </p>
           </CardContent>
         </Card>
@@ -71,11 +71,11 @@ export default function AuditLogs() {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-semibold mb-2" data-testid="page-title">
-          Audit Logs
+          Journaux d'Audit
         </h1>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Lock className="h-4 w-4" />
-          <p>Immutable, append-only audit trail for compliance</p>
+          <p>Piste d'audit immuable et ajout uniquement pour la conformité</p>
         </div>
       </div>
 
@@ -84,12 +84,12 @@ export default function AuditLogs() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Timestamp</TableHead>
-                <TableHead>User</TableHead>
+                <TableHead>Horodatage</TableHead>
+                <TableHead>Utilisateur</TableHead>
                 <TableHead>Action</TableHead>
-                <TableHead>Entity Type</TableHead>
-                <TableHead>Entity ID</TableHead>
-                <TableHead>Tenant</TableHead>
+                <TableHead>Type d'Entité</TableHead>
+                <TableHead>ID Entité</TableHead>
+                <TableHead>École</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -109,7 +109,7 @@ export default function AuditLogs() {
                     colSpan={6}
                     className="text-center py-8 text-muted-foreground"
                   >
-                    No audit logs found
+                    Aucun journal d'audit trouvé
                   </TableCell>
                 </TableRow>
               ) : (

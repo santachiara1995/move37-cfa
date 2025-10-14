@@ -43,8 +43,8 @@ export default function Contracts() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Non Autorisé",
+        description: "Vous êtes déconnecté. Reconnexion...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -77,7 +77,7 @@ export default function Contracts() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">Chargement...</p>
         </div>
       </div>
     );
@@ -88,14 +88,14 @@ export default function Contracts() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold mb-2" data-testid="page-title">
-            Contracts
+            Contrats
           </h1>
           <p className="text-sm text-muted-foreground">
             {isAllSchools
-              ? "All contracts across schools"
+              ? "Tous les contrats de toutes les écoles"
               : currentTenant
-              ? `Contracts at ${currentTenant.name}`
-              : "Select a school to view contracts"}
+              ? `Contrats à ${currentTenant.name}`
+              : "Sélectionnez une école pour voir les contrats"}
           </p>
         </div>
       </div>
@@ -104,9 +104,9 @@ export default function Contracts() {
         <Card>
           <CardContent className="p-8 text-center">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No School Selected</h3>
+            <h3 className="text-lg font-semibold mb-2">Aucune École Sélectionnée</h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Please select a school from the tenant switcher to view contracts.
+              Veuillez sélectionner une école dans le sélecteur d'établissement pour voir les contrats.
             </p>
           </CardContent>
         </Card>
@@ -117,7 +117,7 @@ export default function Contracts() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search contracts..."
+                placeholder="Rechercher des contrats..."
                 className="pl-9"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -127,14 +127,14 @@ export default function Contracts() {
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-48" data-testid="select-status-filter">
                 <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder="Filtrer par statut" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="all">Tous les Statuts</SelectItem>
+                <SelectItem value="draft">Brouillon</SelectItem>
+                <SelectItem value="in_progress">En Cours</SelectItem>
+                <SelectItem value="completed">Terminé</SelectItem>
+                <SelectItem value="cancelled">Annulé</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -144,11 +144,11 @@ export default function Contracts() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Contract Number</TableHead>
-                    <TableHead>Employer</TableHead>
+                    <TableHead>N° de Contrat</TableHead>
+                    <TableHead>Employeur</TableHead>
                     <TableHead>CFA</TableHead>
-                    <TableHead>Start Date</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Date de Début</TableHead>
+                    <TableHead>Statut</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -169,7 +169,7 @@ export default function Contracts() {
                         colSpan={6}
                         className="text-center py-8 text-muted-foreground"
                       >
-                        No contracts found
+                        Aucun contrat trouvé
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -208,7 +208,7 @@ export default function Contracts() {
                             asChild
                             data-testid={`button-view-${contract.id}`}
                           >
-                            <Link href={`/contracts/${contract.id}`}>View</Link>
+                            <Link href={`/contracts/${contract.id}`}>Voir</Link>
                           </Button>
                         </TableCell>
                       </TableRow>

@@ -32,8 +32,8 @@ export default function OpcoPage() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Non Autorisé",
+        description: "Vous êtes déconnecté. Reconnexion...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -53,7 +53,7 @@ export default function OpcoPage() {
   const handleExportCSV = () => {
     toast({
       title: "Export",
-      description: "CSV export functionality coming soon",
+      description: "Fonctionnalité d'export CSV bientôt disponible",
     });
   };
 
@@ -62,7 +62,7 @@ export default function OpcoPage() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">Chargement...</p>
         </div>
       </div>
     );
@@ -77,10 +77,10 @@ export default function OpcoPage() {
           </h1>
           <p className="text-sm text-muted-foreground">
             {isAllSchools
-              ? "All OPCO submissions across schools"
+              ? "Toutes les soumissions OPCO de toutes les écoles"
               : currentTenant
-              ? `OPCO at ${currentTenant.name}`
-              : "Select a school to view OPCO"}
+              ? `OPCO à ${currentTenant.name}`
+              : "Sélectionnez une école pour voir les OPCO"}
           </p>
         </div>
         <Button

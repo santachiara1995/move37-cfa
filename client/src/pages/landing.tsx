@@ -12,7 +12,7 @@ export default function Landing() {
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-semibold">Filiz Admin</span>
-              <span className="text-xs text-muted-foreground">Multi-School Management</span>
+              <span className="text-xs text-muted-foreground">Formation Professionnelle</span>
             </div>
           </div>
           <Button asChild data-testid="button-login">
@@ -25,11 +25,11 @@ export default function Landing() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-semibold mb-4">
-              Multi-School Administration Platform
+              Outils Administratifs pour la Formation Professionnelle
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Unified interface for managing three schools, generating CERFA documents,
-              tracking contracts, and maintaining compliance across all locations.
+              Gérez votre école, centralisez vos données, automatisez vos documents administratifs
+              et assurez la conformité de vos processus.
             </p>
           </div>
 
@@ -38,9 +38,9 @@ export default function Landing() {
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
                 <Building2 className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Multi-Tenant</h3>
+              <h3 className="text-lg font-semibold mb-2">Gestion Multi-Sites</h3>
               <p className="text-sm text-muted-foreground">
-                Manage three schools from a single interface with tenant isolation and role-based access control.
+                Gérez plusieurs établissements depuis une interface unique avec isolation des données et contrôle d'accès par rôle.
               </p>
             </div>
 
@@ -48,9 +48,9 @@ export default function Landing() {
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
                 <FileText className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">CERFA Generation</h3>
+              <h3 className="text-lg font-semibold mb-2">Documents Administratifs</h3>
               <p className="text-sm text-muted-foreground">
-                Automatically fill and generate CERFA 10103*10 PDF forms from contract data with audit trails.
+                Générez automatiquement vos formulaires et documents officiels à partir de vos données avec traçabilité complète.
               </p>
             </div>
 
@@ -58,9 +58,9 @@ export default function Landing() {
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
                 <BarChart3 className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Analytics Dashboard</h3>
+              <h3 className="text-lg font-semibold mb-2">Tableaux de Bord</h3>
               <p className="text-sm text-muted-foreground">
-                Real-time KPIs and cross-school analytics for contracts, OPCO status, and outstanding payments.
+                Suivez vos indicateurs clés en temps réel : contrats, financements, règlements et statistiques consolidées.
               </p>
             </div>
 
@@ -68,9 +68,9 @@ export default function Landing() {
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
                 <Shield className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Audit & Compliance</h3>
+              <h3 className="text-lg font-semibold mb-2">Audit & Conformité</h3>
               <p className="text-sm text-muted-foreground">
-                Comprehensive audit logging for all operations with immutable records for GDPR compliance and accountability.
+                Traçabilité complète de toutes les opérations avec journalisation sécurisée pour garantir la conformité réglementaire.
               </p>
             </div>
           </div>
@@ -85,7 +85,7 @@ export default function Landing() {
 
       <footer className="border-t py-6">
         <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          <p>Internal administration platform for Filiz Multi-School management</p>
+          <p>Plateforme de gestion administrative pour la formation professionnelle</p>
         </div>
       </footer>
     </div>

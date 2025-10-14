@@ -9,6 +9,7 @@ import {
   Settings,
   UserCog,
   GraduationCap,
+  School,
 } from "lucide-react";
 import {
   Sidebar,
@@ -134,10 +135,10 @@ export function AppSidebar() {
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-            <Building2 className="h-5 w-5 text-primary-foreground" />
+            <School className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">Filiz Admin</span>
+            <span className="text-sm font-semibold">0 à 1 Formation</span>
             <span className="text-xs text-muted-foreground">Multi-Écoles</span>
           </div>
         </div>

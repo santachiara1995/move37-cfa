@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Building2, FileText, BarChart3, Shield } from "lucide-react";
+import { School, FileText, BarChart3, Shield } from "lucide-react";
 
 export default function Landing() {
   return (
@@ -8,10 +8,10 @@ export default function Landing() {
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <Building2 className="h-6 w-6 text-primary-foreground" />
+              <School className="h-6 w-6 text-primary-foreground" />
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-semibold">Filiz Admin</span>
+              <span className="text-lg font-semibold">0 à 1 Formation</span>
               <span className="text-xs text-muted-foreground">Formation Professionnelle</span>
             </div>
           </div>
@@ -36,7 +36,7 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             <div className="border rounded-lg p-6 hover-elevate">
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 mb-4">
-                <Building2 className="h-6 w-6 text-primary" />
+                <School className="h-6 w-6 text-primary" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Gestion Multi-Sites</h3>
               <p className="text-sm text-muted-foreground">

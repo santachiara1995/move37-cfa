@@ -20,8 +20,8 @@ export default function ContractDetail() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Non Autorisé",
+        description: "Vous êtes déconnecté. Reconnexion...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -48,15 +48,15 @@ export default function ContractDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/contracts/${contractId}/cerfa`] });
       toast({
-        title: "Success",
-        description: "CERFA PDF generated successfully",
+        title: "Succès",
+        description: "PDF CERFA généré avec succès",
       });
     },
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: "Non Autorisé",
+          description: "Vous êtes déconnecté. Reconnexion...",
           variant: "destructive",
         });
         setTimeout(() => {
@@ -65,8 +65,8 @@ export default function ContractDetail() {
         return;
       }
       toast({
-        title: "Error",
-        description: error.message || "Failed to generate CERFA PDF",
+        title: "Erreur",
+        description: error.message || "Échec de génération du PDF CERFA",
         variant: "destructive",
       });
     },
@@ -77,7 +77,7 @@ export default function ContractDetail() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">Chargement...</p>
         </div>
       </div>
     );
@@ -89,14 +89,14 @@ export default function ContractDetail() {
         <Card>
           <CardContent className="p-8 text-center">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Contract Not Found</h3>
+            <h3 className="text-lg font-semibold mb-2">Contrat Non Trouvé</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              The contract you're looking for doesn't exist or has been removed.
+              Le contrat que vous recherchez n'existe pas ou a été supprimé.
             </p>
             <Button asChild variant="outline">
               <Link href="/contracts">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Contracts
+                Retour aux Contrats
               </Link>
             </Button>
           </CardContent>
@@ -111,7 +111,7 @@ export default function ContractDetail() {
         <Button variant="ghost" size="sm" asChild data-testid="button-back">
           <Link href="/contracts">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            Retour
           </Link>
         </Button>
       </div>
@@ -119,10 +119,10 @@ export default function ContractDetail() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold mb-2" data-testid="page-title">
-            Contract Details
+            Détails du Contrat
           </h1>
           <p className="text-sm text-muted-foreground font-mono">
-            {contract.contractNumber || "No contract number"}
+            {contract.contractNumber || "Aucun numéro de contrat"}
           </p>
         </div>
         <Badge variant={contract.status === "in_progress" ? "default" : "outline"}>
@@ -133,11 +133,11 @@ export default function ContractDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Contract Information</CardTitle>
+            <CardTitle className="text-base">Informations du Contrat</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Employer</p>
+              <p className="text-sm text-muted-foreground mb-1">Employeur</p>
               <p className="font-medium">{contract.employerName || "—"}</p>
             </div>
             <div>
@@ -146,7 +146,7 @@ export default function ContractDetail() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Start Date</p>
+                <p className="text-sm text-muted-foreground mb-1">Date de Début</p>
                 <p className="font-medium">
                   {contract.startDate
                     ? new Date(contract.startDate).toLocaleDateString()
@@ -154,7 +154,7 @@ export default function ContractDetail() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">End Date</p>
+                <p className="text-sm text-muted-foreground mb-1">Date de Fin</p>
                 <p className="font-medium">
                   {contract.endDate
                     ? new Date(contract.endDate).toLocaleDateString()
@@ -167,7 +167,7 @@ export default function ContractDetail() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle className="text-base">CERFA Documents</CardTitle>
+            <CardTitle className="text-base">Documents CERFA</CardTitle>
             <Button
               size="sm"
               onClick={() => generateCerfa.mutate()}
@@ -177,12 +177,12 @@ export default function ContractDetail() {
               {generateCerfa.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating...
+                  Génération...
                 </>
               ) : (
                 <>
                   <FileText className="h-4 w-4 mr-2" />
-                  Generate CERFA
+                  Générer CERFA
                 </>
               )}
             </Button>
@@ -190,7 +190,7 @@ export default function ContractDetail() {
           <CardContent>
             {cerfaPdfs.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No CERFA documents generated yet
+                Aucun document CERFA généré pour le moment
               </p>
             ) : (
               <div className="space-y-3">

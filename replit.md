@@ -1,7 +1,7 @@
-# Filiz Multi-School Front-End
+# 0 à 1 Formation - Multi-School Platform
 
 ## Overview
-Internal, multi-tenant administration platform for managing three schools using the Filiz API as the single source of truth. The platform provides unified dashboards, CERFA PDF generation, contract/devis/OPCO/RAC management, and cross-school analytics.
+Internal, multi-tenant administration platform for managing three schools (0 à 1 Formation network) using the Filiz API as the single source of truth. The platform provides unified dashboards, CERFA PDF generation, contract/devis/OPCO/RAC management, and cross-school analytics.
 
 ## Tech Stack
 - **Frontend**: React with Wouter routing, TanStack Query, Tailwind CSS, Shadcn UI
@@ -91,11 +91,17 @@ Core entities:
 - **AnalystRO**: Read-only access to analytics
 
 ## Recent Changes (October 2025)
+- ✅ **Rebranding "0 à 1 Formation"**: Application renommée
+  - Nom de l'app changé de "Filiz Admin" → "0 à 1 Formation"
+  - Icône d'en-tête changée: Building2 → School (icône d'école)
+  - Titre HTML mis à jour
+  - Branding cohérent sur toutes les pages
 - ✅ **Traduction Complète en Français**: Interface entièrement traduite
-  - Pages traduites: Dashboard, Students, Contracts, Devis, OPCO, RAC
-  - Composants traduits: AppSidebar, TenantSwitcher, Landing
-  - Navigation et messages d'erreur en français
-  - Tous les labels, boutons, titres et descriptions
+  - Pages traduites: Dashboard, Landing, Students, Contracts, Devis, OPCO, RAC, Audit Logs, Contract Detail, Not Found
+  - Composants traduits: AppSidebar (avec icône School), TenantSwitcher
+  - Navigation, messages d'erreur, toasts et formulaires en français
+  - Tous les labels, boutons, titres, descriptions et placeholders
+  - Interface 100% française pour toutes les fonctionnalités principales
 - ✅ **Entreprise Management**: Added full entreprise (company/employer) management system
   - **Database Schema**: New entreprises table with raison_sociale, nom, prenom, email, phone, tenant-scoped
   - **Create Dossier Update**: Changed from School/Student to School/Entreprise tabbed interface

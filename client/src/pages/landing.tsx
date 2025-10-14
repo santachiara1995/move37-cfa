@@ -77,7 +77,7 @@ export default function Landing() {
 
           <div className="text-center">
             <Button size="lg" asChild data-testid="button-get-started">
-              <a href="/api/login">Get Started</a>
+              <a href="/api/login">Commencer</a>
             </Button>
           </div>
         </div>

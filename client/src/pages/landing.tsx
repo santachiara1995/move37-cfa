@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { School, FileText, BarChart3, Shield } from "lucide-react";
+import { SignInButton, SignUpButton } from "@clerk/clerk-react";
 
 export default function Landing() {
   return (
@@ -15,9 +16,18 @@ export default function Landing() {
               <span className="text-xs text-muted-foreground">Formation Professionnelle</span>
             </div>
           </div>
-          <Button asChild data-testid="button-login">
-            <a href="/api/login">Log in</a>
-          </Button>
+          <div className="flex items-center gap-2">
+            <SignInButton mode="modal">
+              <Button variant="outline" data-testid="button-login">
+                Connexion
+              </Button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <Button data-testid="button-signup">
+                Inscription
+              </Button>
+            </SignUpButton>
+          </div>
         </div>
       </header>
 
@@ -76,9 +86,11 @@ export default function Landing() {
           </div>
 
           <div className="text-center">
-            <Button size="lg" asChild data-testid="button-get-started">
-              <a href="/api/login">Commencer</a>
-            </Button>
+            <SignUpButton mode="modal">
+              <Button size="lg" data-testid="button-get-started">
+                Commencer
+              </Button>
+            </SignUpButton>
           </div>
         </div>
       </main>

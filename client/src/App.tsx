@@ -24,6 +24,7 @@ import AdminUsers from "@/pages/admin-users";
 import AdminActivity from "@/pages/admin-activity";
 import NotFound from "@/pages/not-found";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { UserButton } from "@clerk/clerk-react";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -78,7 +79,10 @@ function AppContent() {
                 <div className="flex flex-col flex-1 overflow-hidden">
                   <header className="flex items-center justify-between p-2 border-b shrink-0">
                     <SidebarTrigger data-testid="button-sidebar-toggle" />
-                    <ThemeToggle />
+                    <div className="flex items-center gap-2">
+                      <ThemeToggle />
+                      <UserButton afterSignOutUrl="/" />
+                    </div>
                   </header>
                   <main className="flex-1 overflow-auto">
                     <Router />

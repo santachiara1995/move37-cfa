@@ -39,8 +39,8 @@ export function TenantSwitcher() {
   };
 
   const displayName = isAllSchools
-    ? "All Schools"
-    : currentTenant?.name || "Select a school...";
+    ? "Toutes les Écoles"
+    : currentTenant?.name || "Sélectionnez une école...";
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -62,9 +62,9 @@ export function TenantSwitcher() {
       </PopoverTrigger>
       <PopoverContent className="w-64 p-0">
         <Command>
-          <CommandInput placeholder="Search school..." />
+          <CommandInput placeholder="Rechercher une école..." />
           <CommandList>
-            <CommandEmpty>No school found.</CommandEmpty>
+            <CommandEmpty>Aucune école trouvée.</CommandEmpty>
             <CommandGroup>
               <CommandItem
                 onSelect={() => handleSelect(null, true)}
@@ -77,17 +77,17 @@ export function TenantSwitcher() {
                   }`}
                 />
                 <div className="flex flex-col">
-                  <span className="font-medium">All Schools</span>
+                  <span className="font-medium">Toutes les Écoles</span>
                   <span className="text-xs text-muted-foreground">
-                    Aggregate view across all schools
+                    Vue d'ensemble de toutes les écoles
                   </span>
                 </div>
               </CommandItem>
             </CommandGroup>
             <CommandSeparator />
-            <CommandGroup heading="Schools">
+            <CommandGroup heading="Écoles">
               {isLoading ? (
-                <CommandItem disabled>Loading...</CommandItem>
+                <CommandItem disabled>Chargement...</CommandItem>
               ) : (
                 tenants.map((tenant) => (
                   <CommandItem

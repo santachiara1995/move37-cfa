@@ -55,10 +55,10 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/tenants"] });
       setIsDialogOpen(false);
       setIsSchoolActive(true);
-      toast({ title: "Success", description: "School created successfully" });
+      toast({ title: "Succès", description: "École créée avec succès" });
     },
     onError: () => {
-      toast({ title: "Error", description: "Failed to create school", variant: "destructive" });
+      toast({ title: "Erreur", description: "Échec de la création de l'école", variant: "destructive" });
     },
   });
 
@@ -73,10 +73,10 @@ export default function Dashboard() {
       });
       setIsDialogOpen(false);
       setSelectedSchoolId("");
-      toast({ title: "Success", description: "Entreprise created successfully" });
+      toast({ title: "Succès", description: "Entreprise créée avec succès" });
     },
     onError: () => {
-      toast({ title: "Error", description: "Failed to create entreprise", variant: "destructive" });
+      toast({ title: "Erreur", description: "Échec de la création de l'entreprise", variant: "destructive" });
     },
   });
 
@@ -94,8 +94,8 @@ export default function Dashboard() {
     // Validate required fields
     if (!data.name || !data.slug) {
       toast({ 
-        title: "Validation Error", 
-        description: "School Name and Slug are required", 
+        title: "Erreur de validation", 
+        description: "Le nom de l'école et le slug sont requis", 
         variant: "destructive" 
       });
       return;
@@ -107,7 +107,7 @@ export default function Dashboard() {
   const handleEntrepriseSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedSchoolId) {
-      toast({ title: "Validation Error", description: "Please select a school", variant: "destructive" });
+      toast({ title: "Erreur de validation", description: "Veuillez sélectionner une école", variant: "destructive" });
       return;
     }
     const formData = new FormData(e.currentTarget);
@@ -123,8 +123,8 @@ export default function Dashboard() {
     // Validate required fields
     if (!data.raisonSociale || !data.nom || !data.prenom) {
       toast({ 
-        title: "Validation Error", 
-        description: "Raison Sociale, First Name, and Last Name are required", 
+        title: "Erreur de validation", 
+        description: "La raison sociale, le prénom et le nom sont requis", 
         variant: "destructive" 
       });
       return;
@@ -137,8 +137,8 @@ export default function Dashboard() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Non autorisé",
+        description: "Vous êtes déconnecté. Reconnexion en cours...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -162,7 +162,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">Chargement...</p>
         </div>
       </div>
     );
@@ -173,14 +173,14 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold mb-2" data-testid="page-title">
-            Dashboard
+            Tableau de Bord
           </h1>
           <p className="text-sm text-muted-foreground">
             {isAllSchools
-              ? "Overview across all schools"
+              ? "Vue d'ensemble de toutes les écoles"
               : currentTenant
-              ? `${currentTenant.name} overview`
-              : "Select a school to view dashboard"}
+              ? `Vue d'ensemble de ${currentTenant.name}`
+              : "Sélectionnez une école pour voir le tableau de bord"}
           </p>
         </div>
         {user?.role === "OpsAdmin" && (
@@ -188,23 +188,23 @@ export default function Dashboard() {
             <DialogTrigger asChild>
               <Button data-testid="button-create-dossier" className="gap-2">
                 <FolderPlus className="w-4 h-4" />
-                Create Dossier
+                Créer un Dossier
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Create New Dossier</DialogTitle>
+                <DialogTitle>Créer un Nouveau Dossier</DialogTitle>
               </DialogHeader>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="school" data-testid="tab-school">School</TabsTrigger>
+                  <TabsTrigger value="school" data-testid="tab-school">École</TabsTrigger>
                   <TabsTrigger value="entreprise" data-testid="tab-entreprise">Entreprise</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="school">
                   <form onSubmit={handleSchoolSubmit} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">School Name</Label>
+                      <Label htmlFor="name">Nom de l'École</Label>
                       <Input
                         id="name"
                         name="name"
@@ -223,7 +223,7 @@ export default function Dashboard() {
                         data-testid="input-school-slug"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Unique identifier (lowercase, hyphenated)
+                        Identifiant unique (minuscules, séparées par des tirets)
                       </p>
                     </div>
                     <div className="space-y-2">
@@ -251,14 +251,14 @@ export default function Dashboard() {
                         checked={isSchoolActive}
                         onCheckedChange={setIsSchoolActive}
                       />
-                      <Label htmlFor="isActive">Active</Label>
+                      <Label htmlFor="isActive">Actif</Label>
                     </div>
                     <DialogFooter>
                       <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                        Cancel
+                        Annuler
                       </Button>
                       <Button type="submit" disabled={createSchoolMutation.isPending} data-testid="button-submit-school">
-                        {createSchoolMutation.isPending ? "Creating..." : "Create School"}
+                        {createSchoolMutation.isPending ? "Création..." : "Créer l'École"}
                       </Button>
                     </DialogFooter>
                   </form>
@@ -267,10 +267,10 @@ export default function Dashboard() {
                 <TabsContent value="entreprise">
                   <form onSubmit={handleEntrepriseSubmit} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="tenantId">School</Label>
+                      <Label htmlFor="tenantId">École</Label>
                       <Select value={selectedSchoolId} onValueChange={setSelectedSchoolId}>
                         <SelectTrigger data-testid="select-entreprise-school">
-                          <SelectValue placeholder="Select a school" />
+                          <SelectValue placeholder="Sélectionnez une école" />
                         </SelectTrigger>
                         <SelectContent>
                           {schools.map((school) => (
@@ -282,7 +282,7 @@ export default function Dashboard() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="raisonSociale">Raison Sociale (Company Name)</Label>
+                      <Label htmlFor="raisonSociale">Raison Sociale</Label>
                       <Input
                         id="raisonSociale"
                         name="raisonSociale"
@@ -293,7 +293,7 @@ export default function Dashboard() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="prenom">Prénom (First Name)</Label>
+                        <Label htmlFor="prenom">Prénom</Label>
                         <Input
                           id="prenom"
                           name="prenom"
@@ -302,7 +302,7 @@ export default function Dashboard() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="nom">Nom (Last Name)</Label>
+                        <Label htmlFor="nom">Nom</Label>
                         <Input
                           id="nom"
                           name="nom"
@@ -330,10 +330,10 @@ export default function Dashboard() {
                     </div>
                     <DialogFooter>
                       <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                        Cancel
+                        Annuler
                       </Button>
                       <Button type="submit" disabled={createEntrepriseMutation.isPending} data-testid="button-submit-entreprise">
-                        {createEntrepriseMutation.isPending ? "Creating..." : "Create Entreprise"}
+                        {createEntrepriseMutation.isPending ? "Création..." : "Créer l'Entreprise"}
                       </Button>
                     </DialogFooter>
                   </form>
@@ -348,10 +348,10 @@ export default function Dashboard() {
         <Card>
           <CardContent className="p-8 text-center">
             <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No School Selected</h3>
+            <h3 className="text-lg font-semibold mb-2">Aucune École Sélectionnée</h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Please select a school from the tenant switcher in the sidebar to view the dashboard,
-              or choose "All Schools" for an aggregate view.
+              Veuillez sélectionner une école dans le sélecteur d'établissement de la barre latérale pour voir le tableau de bord,
+              ou choisissez "Toutes les Écoles" pour une vue d'ensemble.
             </p>
           </CardContent>
         </Card>
@@ -359,43 +359,43 @@ export default function Dashboard() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <KPICard
-              title="Contracts in Progress"
+              title="Contrats en Cours"
               value={kpis?.contractsInProgress ?? 0}
               icon={FileText}
               isLoading={isLoading}
             />
             <KPICard
-              title="OPCO to Send"
+              title="OPCO à Envoyer"
               value={kpis?.opcoToSend ?? 0}
               icon={Building2}
               status={kpis && kpis.opcoToSend > 0 ? "warning" : undefined}
-              trendValue={kpis && kpis.opcoToSend > 0 ? "Action required" : undefined}
+              trendValue={kpis && kpis.opcoToSend > 0 ? "Action requise" : undefined}
               isLoading={isLoading}
             />
             <KPICard
-              title="Devis Pending"
+              title="Devis en Attente"
               value={kpis?.devisPending ?? 0}
               icon={FileSpreadsheet}
               isLoading={isLoading}
             />
             <KPICard
-              title="RAC Overdue"
+              title="RAC en Retard"
               value={kpis?.racOverdue ?? 0}
               icon={AlertCircle}
               status={kpis && kpis.racOverdue > 0 ? "danger" : "success"}
-              trendValue={kpis && kpis.racOverdue > 0 ? "Urgent" : "On track"}
+              trendValue={kpis && kpis.racOverdue > 0 ? "Urgent" : "À jour"}
               isLoading={isLoading}
             />
             <KPICard
-              title="Total Students"
+              title="Total Étudiants"
               value={kpis?.totalStudents ?? 0}
               icon={Users}
               isLoading={isLoading}
             />
             <KPICard
-              title="Recent Activity"
+              title="Activité Récente"
               value={kpis?.recentActivity ?? 0}
-              subtitle="Last 7 days"
+              subtitle="7 derniers jours"
               icon={TrendingUp}
               isLoading={isLoading}
             />
@@ -404,7 +404,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Recent Contracts</CardTitle>
+                <CardTitle className="text-base">Contrats Récents</CardTitle>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -415,7 +415,7 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div className="text-sm text-muted-foreground text-center py-8">
-                    No recent contracts
+                    Aucun contrat récent
                   </div>
                 )}
               </CardContent>
@@ -423,7 +423,7 @@ export default function Dashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Pending Actions</CardTitle>
+                <CardTitle className="text-base">Actions en Attente</CardTitle>
               </CardHeader>
               <CardContent>
                 {isLoading ? (
@@ -434,7 +434,7 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div className="text-sm text-muted-foreground text-center py-8">
-                    No pending actions
+                    Aucune action en attente
                   </div>
                 )}
               </CardContent>

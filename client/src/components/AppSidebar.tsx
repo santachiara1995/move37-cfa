@@ -39,19 +39,19 @@ import { LogOut, User } from "lucide-react";
 
 const menuItems = [
   {
-    title: "Dashboard",
+    title: "Tableau de Bord",
     url: "/",
     icon: LayoutDashboard,
     testId: "nav-dashboard",
   },
   {
-    title: "Students",
+    title: "Étudiants",
     url: "/students",
     icon: Users,
     testId: "nav-students",
   },
   {
-    title: "Contracts",
+    title: "Contrats",
     url: "/contracts",
     icon: FileText,
     testId: "nav-contracts",
@@ -75,7 +75,7 @@ const menuItems = [
     testId: "nav-rac",
   },
   {
-    title: "Audit Logs",
+    title: "Journaux d'Audit",
     url: "/audit",
     icon: Shield,
     testId: "nav-audit",
@@ -84,31 +84,31 @@ const menuItems = [
 
 const adminMenuItems = [
   {
-    title: "Schools",
+    title: "Écoles",
     url: "/admin/schools",
     icon: Building2,
     testId: "nav-admin-schools",
   },
   {
-    title: "Students",
+    title: "Étudiants",
     url: "/admin/students",
     icon: UserCog,
     testId: "nav-admin-students",
   },
   {
-    title: "Programs",
+    title: "Programmes",
     url: "/admin/programs",
     icon: GraduationCap,
     testId: "nav-admin-programs",
   },
   {
-    title: "Users",
+    title: "Utilisateurs",
     url: "/admin/users",
     icon: Shield,
     testId: "nav-admin-users",
   },
   {
-    title: "Activity",
+    title: "Activité",
     url: "/admin/activity",
     icon: Settings,
     testId: "nav-admin-activity",
@@ -138,13 +138,13 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold">Filiz Admin</span>
-            <span className="text-xs text-muted-foreground">Multi-School</span>
+            <span className="text-xs text-muted-foreground">Multi-Écoles</span>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Tenant</SidebarGroupLabel>
+          <SidebarGroupLabel>Établissement</SidebarGroupLabel>
           <SidebarGroupContent className="px-2">
             <TenantSwitcher />
           </SidebarGroupContent>
@@ -227,17 +227,17 @@ export function AppSidebar() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>Mon Compte</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem disabled>
               <User className="mr-2 h-4 w-4" />
-              <span>Profile</span>
+              <span>Profil</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <a href="/api/logout" data-testid="button-logout">
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <span>Déconnexion</span>
               </a>
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -26,8 +26,8 @@ export default function Students() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: "Non Autorisé",
+        description: "Vous êtes déconnecté. Reconnexion...",
         variant: "destructive",
       });
       setTimeout(() => {
@@ -59,7 +59,7 @@ export default function Students() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <p className="text-sm text-muted-foreground">Chargement...</p>
         </div>
       </div>
     );
@@ -70,14 +70,14 @@ export default function Students() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold mb-2" data-testid="page-title">
-            Students
+            Étudiants
           </h1>
           <p className="text-sm text-muted-foreground">
             {isAllSchools
-              ? "All students across schools"
+              ? "Tous les étudiants de toutes les écoles"
               : currentTenant
-              ? `Students at ${currentTenant.name}`
-              : "Select a school to view students"}
+              ? `Étudiants à ${currentTenant.name}`
+              : "Sélectionnez une école pour voir les étudiants"}
           </p>
         </div>
       </div>
@@ -86,9 +86,9 @@ export default function Students() {
         <Card>
           <CardContent className="p-8 text-center">
             <UsersIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No School Selected</h3>
+            <h3 className="text-lg font-semibold mb-2">Aucune École Sélectionnée</h3>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Please select a school from the tenant switcher to view students.
+              Veuillez sélectionner une école dans le sélecteur d'établissement pour voir les étudiants.
             </p>
           </CardContent>
         </Card>
@@ -99,7 +99,7 @@ export default function Students() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search students..."
+                placeholder="Rechercher des étudiants..."
                 className="pl-9"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -113,11 +113,11 @@ export default function Students() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
+                    <TableHead>Nom</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    {isAllSchools && <TableHead>School</TableHead>}
-                    <TableHead>Status</TableHead>
+                    <TableHead>Téléphone</TableHead>
+                    {isAllSchools && <TableHead>École</TableHead>}
+                    <TableHead>Statut</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -149,7 +149,7 @@ export default function Students() {
                         colSpan={isAllSchools ? 5 : 4}
                         className="text-center py-8 text-muted-foreground"
                       >
-                        No students found
+                        Aucun étudiant trouvé
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -170,11 +170,11 @@ export default function Students() {
                         </TableCell>
                         {isAllSchools && (
                           <TableCell>
-                            <Badge variant="outline">School</Badge>
+                            <Badge variant="outline">École</Badge>
                           </TableCell>
                         )}
                         <TableCell>
-                          <Badge variant="outline">Active</Badge>
+                          <Badge variant="outline">Actif</Badge>
                         </TableCell>
                       </TableRow>
                     ))

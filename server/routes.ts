@@ -1,7 +1,8 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated, requireRole } from "./replitAuth";
+import { isAuthenticated, syncClerkUser, requireRole } from "./clerkAuth";
+import { getAuth } from "@clerk/express";
 import { FilizAdapter } from "./filizAdapter";
 import { cerfaService } from "./cerfaService";
 import { objectStorage } from "./objectStorage";
@@ -37,30 +38,18 @@ async function createAuditLog(
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
-
   // ========== AUTH ROUTES ==========
-  app.get("/api/auth/user", isAuthenticated, async (req: any, res: Response) => {
+  app.get("/api/auth/user", isAuthenticated, syncClerkUser, async (req: Request, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
-      const claims = req.user.claims;
-      
-      // Get all active tenants to ensure user always has access to current schools
-      const allTenants = await storage.getTenants();
-      const tenantIds = allTenants.map((t: Tenant) => t.id);
-      
-      // Always upsert user to ensure they have access to all current tenants
-      // This handles both first-time login and keeping tenant access up-to-date
-      const user = await storage.upsertUser({
-        id: claims.sub,
-        email: claims.email,
-        firstName: claims.first_name,
-        lastName: claims.last_name,
-        profileImageUrl: claims.profile_image_url,
-        role: "OpsAdmin", // Default role - grants full access
-        tenantIds, // Grant access to all current active tenants
-      });
+      const auth = getAuth(req);
+      if (!auth || !auth.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const user = await storage.getUser(auth.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
       
       res.json(user);
     } catch (error) {
@@ -70,9 +59,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ========== TENANT ROUTES ==========
-  app.get("/api/tenants", isAuthenticated, async (req: any, res: Response) => {
+  app.get("/api/tenants", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(401).json({ message: "User not found" });
@@ -92,7 +85,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/dashboard/kpis", isAuthenticated, requireRole("OpsAdmin", "BillingOps", "AnalystRO"), async (req: any, res: Response) => {
     try {
       const tenantId = req.query.tenantId as string;
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(401).json({ message: "User not found" });
@@ -195,7 +192,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const tenantId = req.query.tenantId as string;
       const searchQuery = req.query.search as string;
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(401).json({ message: "User not found" });
@@ -236,7 +237,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const tenantId = req.query.tenantId as string;
       const statusFilter = req.query.status as string;
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(401).json({ message: "User not found" });
@@ -276,7 +281,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate tenant access
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       const user = await storage.getUser(userId);
       if (!user || !user.tenantIds.includes(contract.tenantId)) {
         return res.status(403).json({ message: "Access denied" });
@@ -298,7 +307,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate tenant access
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       const user = await storage.getUser(userId);
       if (!user || !user.tenantIds.includes(contract.tenantId)) {
         return res.status(403).json({ message: "Access denied" });
@@ -315,7 +328,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/contracts/:id/cerfa/generate", isAuthenticated, requireRole("OpsAdmin", "BillingOps"), async (req: any, res: Response) => {
     try {
       const contractId = req.params.id;
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
 
       const contract = await storage.getContract(contractId);
       if (!contract) {
@@ -397,7 +414,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/devis", isAuthenticated, requireRole("OpsAdmin", "BillingOps", "AnalystRO"), async (req: any, res: Response) => {
     try {
       const tenantId = req.query.tenantId as string;
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(401).json({ message: "User not found" });
@@ -433,7 +454,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/opco", isAuthenticated, requireRole("OpsAdmin", "BillingOps", "AnalystRO"), async (req: any, res: Response) => {
     try {
       const tenantId = req.query.tenantId as string;
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(401).json({ message: "User not found" });
@@ -469,7 +494,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/rac", isAuthenticated, requireRole("OpsAdmin", "BillingOps", "AnalystRO"), async (req: any, res: Response) => {
     try {
       const tenantId = req.query.tenantId as string;
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(401).json({ message: "User not found" });
@@ -528,7 +557,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/users/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       
       // Validate request body
       const validation = updateUserRoleSchema.safeParse(req.body);
@@ -655,7 +688,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/schools", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       
       const validation = insertTenantSchema.safeParse(req.body);
       if (!validation.success) {
@@ -686,7 +723,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/schools/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       
       const existingSchool = await storage.getTenant(req.params.id);
       if (!existingSchool) {
@@ -722,7 +763,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/admin/schools/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       
       const existingSchool = await storage.getTenant(req.params.id);
       if (!existingSchool) {
@@ -768,7 +813,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/students", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       
       const validation = insertStudentSchema.safeParse(req.body);
       if (!validation.success) {
@@ -799,7 +848,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/students/bulk", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       const { students } = req.body;
 
       if (!Array.isArray(students) || students.length === 0) {
@@ -863,7 +916,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/students/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       
       const existingStudent = await storage.getStudentById(req.params.id);
       if (!existingStudent) {
@@ -899,7 +956,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/admin/students/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       const student = await storage.getStudentById(req.params.id);
       if (!student) {
         return res.status(404).json({ message: "Student not found" });
@@ -927,7 +988,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Entreprise Management
   app.post("/api/admin/entreprises", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       
       const validation = insertEntrepriseSchema.safeParse(req.body);
       if (!validation.success) {
@@ -976,7 +1041,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/programs", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       
       const validation = insertProgramSchema.safeParse(req.body);
       if (!validation.success) {
@@ -1007,7 +1076,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/programs/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       
       const existingProgram = await storage.getProgramById(req.params.id);
       if (!existingProgram) {
@@ -1043,7 +1116,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/admin/programs/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
       const program = await storage.getProgramById(req.params.id);
       if (!program) {
         return res.status(404).json({ message: "Program not found" });

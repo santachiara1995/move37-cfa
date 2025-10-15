@@ -1,0 +1,53 @@
+Enhance student and company profiles with all CERFA fields
+
+Summary
+
+Expands student and company profile forms from 8-9 basic fields to 30+ CERFA-compliant fields, organized in accordion sections for better UX. This enables complete CERFA PDF generation directly from student/company profiles without requiring manual data entry during contract creation.
+
+Database Changes:
+
+Students table: Added 20+ fields (usageName, nir, sex, address components, birth location, nationality, social regime, status flags, education history)
+Entreprises table: Added 13+ fields (siret, address components, employer type/specific, NAF code, employee count, IDCC), made nom/prenom nullable (⚠️ potential breaking change)
+Frontend Changes:
+
+Student form: Reorganized into 6 accordion sections (Identité, Adresse, Contact, Statut, Formation, Identifiants)
+Company form: Reorganized into 3 accordion sections (Identité de l'entreprise, Adresse, Contact)
+All labels in French following existing conventions
+Form handlers updated to collect all new fields
+All new fields are nullable for backward compatibility with existing records.
+
+Review & Testing Checklist for Human
+
+⚠️ CRITICAL: This code was NOT tested locally due to environment issues (missing nanoid, no DATABASE_URL). All testing must be done after deployment.
+
+Database (Priority: CRITICAL 🔴)
+
+ Verify database migration runs successfully - 33+ new columns across 2 tables
+ Verify all new columns exist in production database with correct types
+ Check existing student/company records still load without errors
+ Verify breaking change: entreprises.nom and entreprises.prenom are now nullable - check if any existing code assumes these are always present
+Student Form (Priority: HIGH 🟡)
+
+ Create new student with all fields filled - verify all data saves correctly
+ Create new student with only required fields (firstName, lastName, tenantId) - verify it works
+ Edit existing student without new fields - verify form displays correctly and doesn't break
+ Edit existing student and add new fields - verify updates work
+ Test all 6 accordion sections expand/collapse correctly
+ Verify checkbox fields work (highLevelAthlete, disabledWorker, businessProject)
+Company Form (Priority: HIGH 🟡)
+
+ Create new company with all fields filled - verify all data saves correctly
+ Create new company with only required fields (raisonSociale, nom, prenom, tenantId) - verify it works
+ Verify 3 accordion sections expand/collapse correctly
+ Check that form validation still works (required fields)
+CERFA PDF Generation (Priority: HIGH 🟡)
+
+ Create contract with fully-populated student profile - verify all fields appear in generated CERFA PDF
+ Create contract with fully-populated company profile - verify all fields appear in PDF
+ Create contract with minimal student/company data - verify PDF generation doesn't break
+Backward Compatibility (Priority: MEDIUM 🟡)
+
+ Load page with existing students that have no new fields - verify no errors
+ Load page with existing companies that have no new fields - verify no errors
+ Create contract using existing student/company records - verify it works
+ Check if any code breaks from entreprises.nom/prenom being nullable (grep codebase for references)

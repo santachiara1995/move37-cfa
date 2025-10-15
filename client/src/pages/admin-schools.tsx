@@ -27,7 +27,7 @@ export default function AdminSchools() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/schools"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/tenants"] });
       setIsOpen(false);
-      toast({ title: "Success", description: "School created successfully" });
+      toast({ title: "Succès", description: "Établissement créé avec succès" });
     },
   });
 
@@ -39,7 +39,7 @@ export default function AdminSchools() {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/tenants"] });
       setIsOpen(false);
       setEditingSchool(null);
-      toast({ title: "Success", description: "School updated successfully" });
+      toast({ title: "Succès", description: "Établissement modifié avec succès" });
     },
   });
 
@@ -48,7 +48,7 @@ export default function AdminSchools() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/schools"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/tenants"] });
-      toast({ title: "Success", description: "School deleted successfully" });
+      toast({ title: "Succès", description: "Établissement supprimé avec succès" });
     },
   });
 
@@ -95,8 +95,8 @@ export default function AdminSchools() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold" data-testid="heading-schools">Schools Management</h1>
-          <p className="text-muted-foreground mt-1">Manage schools and their Filiz API configuration</p>
+          <h1 className="text-3xl font-bold" data-testid="heading-schools">Gestion des Établissements</h1>
+          <p className="text-muted-foreground mt-1">Gérer les établissements et leur configuration API Filiz</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -105,23 +105,23 @@ export default function AdminSchools() {
             data-testid="button-export-schools"
           >
             <Download className="w-4 h-4 mr-2" />
-            Export CSV
+            Exporter CSV
           </Button>
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button onClick={openCreateDialog} data-testid="button-add-school">
               <Plus className="w-4 h-4 mr-2" />
-              Add School
+              Ajouter un Établissement
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>{editingSchool ? "Edit School" : "Add New School"}</DialogTitle>
+              <DialogTitle>{editingSchool ? "Modifier l'Établissement" : "Nouvel Établissement"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">School Name</Label>
+                  <Label htmlFor="name">Nom de l'Établissement</Label>
                   <Input
                     id="name"
                     name="name"
@@ -132,7 +132,7 @@ export default function AdminSchools() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="slug">Slug</Label>
+                  <Label htmlFor="slug">Identifiant</Label>
                   <Input
                     id="slug"
                     name="slug"
@@ -156,16 +156,16 @@ export default function AdminSchools() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="filizApiKey">Filiz API Key</Label>
+                <Label htmlFor="filizApiKey">Clé API Filiz</Label>
                 <Textarea
                   id="filizApiKey"
                   name="filizApiKey"
                   defaultValue={editingSchool?.filizApiKey || ""}
-                  placeholder="Enter Filiz API key..."
+                  placeholder="Entrez la clé API Filiz..."
                   rows={3}
                   data-testid="input-filiz-key"
                 />
-                <p className="text-sm text-muted-foreground">Obtain from Filiz partner portal</p>
+                <p className="text-sm text-muted-foreground">À obtenir depuis le portail partenaire Filiz</p>
               </div>
 
               <div className="flex items-center space-x-2">
@@ -175,15 +175,15 @@ export default function AdminSchools() {
                   defaultChecked={editingSchool?.isActive ?? true}
                   data-testid="switch-school-active"
                 />
-                <Label htmlFor="isActive">Active</Label>
+                <Label htmlFor="isActive">Actif</Label>
               </div>
 
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
-                  Cancel
+                  Annuler
                 </Button>
                 <Button type="submit" data-testid="button-save-school">
-                  {editingSchool ? "Update" : "Create"} School
+                  {editingSchool ? "Modifier" : "Créer"} l'Établissement
                 </Button>
               </DialogFooter>
             </form>
@@ -219,7 +219,7 @@ export default function AdminSchools() {
                     variant="ghost"
                     size="icon"
                     onClick={() => {
-                      if (confirm(`Delete ${school.name}?`)) {
+                      if (confirm(`Supprimer ${school.name} ?`)) {
                         deleteMutation.mutate(school.id);
                       }
                     }}
@@ -232,15 +232,15 @@ export default function AdminSchools() {
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Status</span>
+                <span className="text-muted-foreground">Statut</span>
                 <span className={school.isActive ? "text-green-600" : "text-red-600"}>
-                  {school.isActive ? "Active" : "Inactive"}
+                  {school.isActive ? "Actif" : "Inactif"}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Filiz API</span>
+                <span className="text-muted-foreground">API Filiz</span>
                 <span className={school.filizApiKey ? "text-green-600" : "text-yellow-600"}>
-                  {school.filizApiKey ? "Configured" : "Not configured"}
+                  {school.filizApiKey ? "Configurée" : "Non configurée"}
                 </span>
               </div>
               {school.filizApiUrl && (

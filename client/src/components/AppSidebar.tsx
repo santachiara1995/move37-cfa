@@ -85,7 +85,7 @@ const menuItems = [
 
 const adminMenuItems = [
   {
-    title: "Écoles",
+    title: "Établissements",
     url: "/admin/schools",
     icon: Building2,
     testId: "nav-admin-schools",
@@ -139,12 +139,12 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold">0 à 1 Formation</span>
-            <span className="text-xs text-muted-foreground">Multi-Écoles</span>
+            <span className="text-xs text-muted-foreground">Plateforme de Gestion</span>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
+        <SidebarGroup className="hidden">
           <SidebarGroupLabel>Établissement</SidebarGroupLabel>
           <SidebarGroupContent className="px-2">
             <TenantSwitcher />

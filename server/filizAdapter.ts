@@ -166,6 +166,72 @@ export class FilizAdapter {
     return data;
   }
 
+  async getDossier(folderId: string): Promise<any> {
+    const cacheKey = this.getCacheKey(`/folder`, { folderId });
+    const cached = this.getFromCache(cacheKey);
+    if (cached) return cached;
+
+    const params = new URLSearchParams({ folderId });
+    const data = await this.fetchWithRetry(`/api/folder?${params}`);
+    this.setCache(cacheKey, data);
+    return data;
+  }
+
+  async getPaymentSchedule(folderId: string): Promise<{
+    totalDeadlineOPCO: number;
+    totalDeadlineRAC: number;
+    deadlines?: Array<{
+      number: number;
+      amount: number;
+      dueDate: string;
+      status: 'pending' | 'paid' | 'overdue';
+      type: 'OPCO' | 'RAC';
+    }>;
+  }> {
+    const dossier = await this.getDossier(folderId);
+    return dossier.deadlinesInfos || { totalDeadlineOPCO: 0, totalDeadlineRAC: 0 };
+  }
+
+  async createDossierStep1(data: {
+    studentInfos: any;
+    contactCompanyInfos?: any;
+    fileManagerInfos: any;
+    referentTeacherInfos?: any;
+    headTeacher?: any;
+    config: {
+      folder: string;
+      classId: string;
+      step: number;
+      contractInformations: any;
+    };
+  }): Promise<{ folderId: string; url: string }> {
+    return await this.fetchWithRetry('/api/folder', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateFinancialPart(folderId: string, financialData: {
+    contractStartDate?: string;
+    contractEndDate?: string;
+    idccNumber?: string;
+    opco?: string;
+    privateBusinessSector?: boolean;
+    typeOfEmployer?: string;
+    contractAmount?: number;
+    tradeDiscount?: number;
+    trainingReimbursementAmount?: number;
+    trainingReimbursementAnnualAmount?: number;
+  }): Promise<void> {
+    await this.fetchWithRetry('/api/folder', {
+      method: 'PATCH',
+      body: JSON.stringify({ folderId, ...financialData }),
+    });
+    
+    const cacheKey = this.getCacheKey(`/folder`, { folderId });
+    this.cache.delete(cacheKey);
+  }
+
   clearCache(): void {
     this.cache.clear();
   }

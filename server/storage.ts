@@ -354,6 +354,29 @@ export class DatabaseStorage implements IStorage {
     return contract;
   }
 
+  async updateContract(id: string, updates: Partial<Contract>): Promise<Contract> {
+    const [updated] = await db
+      .update(contracts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(contracts.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getOpcoByContractId(contractId: string): Promise<Opco[]> {
+    return await db
+      .select()
+      .from(opco)
+      .where(eq(opco.contractId, contractId));
+  }
+
+  async getRacByContractId(contractId: string): Promise<Rac[]> {
+    return await db
+      .select()
+      .from(rac)
+      .where(eq(rac.contractId, contractId));
+  }
+
   // Devis operations
   async getDevisList(tenantId: string): Promise<Devis[]> {
     return await db

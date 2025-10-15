@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -6,7 +6,11 @@ import { useRoute, Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, FileText, Download, Loader2 } from "lucide-react";
+import { ArrowLeft, FileText, Download, Loader2, Receipt, RefreshCw, AlertCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import type { Contract, CerfaPdf } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -16,6 +20,9 @@ export default function ContractDetail() {
   const { toast } = useToast();
   const [, params] = useRoute("/contracts/:id");
   const contractId = params?.id;
+  const [terminationDialogOpen, setTerminationDialogOpen] = useState(false);
+  const [terminationDate, setTerminationDate] = useState("");
+  const [terminationReason, setTerminationReason] = useState("");
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -38,6 +45,16 @@ export default function ContractDetail() {
 
   const { data: cerfaPdfs = [] } = useQuery<CerfaPdf[]>({
     queryKey: [`/api/contracts/${contractId}/cerfa`],
+    enabled: !authLoading && isAuthenticated && !!contractId,
+  });
+
+  const { data: paymentData } = useQuery<{
+    filizData: { totalDeadlineOPCO: number; totalDeadlineRAC: number } | null;
+    opcoRecords: any[];
+    racRecords: any[];
+    summary: { totalOPCO: number; totalRAC: number; opcoCount: number; racCount: number };
+  }>({
+    queryKey: [`/api/contracts/${contractId}/payments`],
     enabled: !authLoading && isAuthenticated && !!contractId,
   });
 
@@ -67,6 +84,53 @@ export default function ContractDetail() {
       toast({
         title: "Erreur",
         description: error.message || "Échec de génération du PDF CERFA",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const terminateContract = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", `/api/contracts/${contractId}/terminate`, {
+        terminationDate,
+        terminationReason,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/contracts/${contractId}`] });
+      setTerminationDialogOpen(false);
+      toast({
+        title: "Success",
+        description: "Contract terminated successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to terminate contract",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const syncContract = useMutation({
+    mutationFn: async () => {
+      if (!contract?.filizId) {
+        throw new Error("Contract has no Filiz ID");
+      }
+      return await apiRequest("POST", `/api/contracts/${contractId}/sync`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/contracts/${contractId}`] });
+      toast({
+        title: "Success",
+        description: "Contract synced successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sync contract",
         variant: "destructive",
       });
     },
@@ -125,9 +189,71 @@ export default function ContractDetail() {
             {contract.contractNumber || "Aucun numéro de contrat"}
           </p>
         </div>
-        <Badge variant={contract.status === "in_progress" ? "default" : "outline"}>
-          {contract.status}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant={contract.status === "in_progress" ? "default" : "outline"}>
+            {contract.status}
+          </Badge>
+          
+          {contract.filizId && (
+            <Button variant="outline" size="sm" onClick={() => syncContract.mutate()} disabled={syncContract.isPending}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Sync with Filiz
+            </Button>
+          )}
+
+          {contract.status !== "terminated" && contract.status !== "cancelled" && (
+            <Dialog open={terminationDialogOpen} onOpenChange={setTerminationDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  Terminate Contract
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Terminate Contract</DialogTitle>
+                  <DialogDescription>
+                    Declare the termination of this contract. This action will update the contract status to "terminated".
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="terminationDate">Termination Date *</Label>
+                    <Input
+                      id="terminationDate"
+                      type="date"
+                      value={terminationDate}
+                      onChange={(e) => setTerminationDate(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="terminationReason">Reason (optional)</Label>
+                    <Textarea
+                      id="terminationReason"
+                      value={terminationReason}
+                      onChange={(e) => setTerminationReason(e.target.value)}
+                      placeholder="Enter termination reason..."
+                      rows={3}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setTerminationDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => terminateContract.mutate()}
+                    disabled={!terminationDate || terminateContract.isPending}
+                  >
+                    {terminateContract.isPending ? "Terminating..." : "Terminate Contract"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -224,6 +350,54 @@ export default function ContractDetail() {
                     </Button>
                   </div>
                 ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+            <CardTitle className="text-base">Payment Schedule</CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+            >
+              <Link href={`/contracts/${contractId}/payments`}>
+                <Receipt className="h-4 w-4 mr-2" />
+                View Details
+              </Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {!paymentData ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Loading payment information...
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium">OPCO Total</p>
+                    <p className="text-xs text-muted-foreground">
+                      {paymentData.summary.opcoCount} payment(s)
+                    </p>
+                  </div>
+                  <p className="text-lg font-semibold">
+                    {(paymentData.summary.totalOPCO / 100).toFixed(2)} €
+                  </p>
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium">RAC Total</p>
+                    <p className="text-xs text-muted-foreground">
+                      {paymentData.summary.racCount} payment(s)
+                    </p>
+                  </div>
+                  <p className="text-lg font-semibold">
+                    {(paymentData.summary.totalRAC / 100).toFixed(2)} €
+                  </p>
+                </div>
               </div>
             )}
           </CardContent>

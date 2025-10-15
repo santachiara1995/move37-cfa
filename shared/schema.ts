@@ -151,9 +151,11 @@ export const contracts = pgTable("contracts", {
   studentId: varchar("student_id").references(() => students.id),
   filizId: varchar("filiz_id"), // External ID from Filiz API
   contractNumber: varchar("contract_number"),
-  status: varchar("status").notNull(), // draft, in_progress, completed, cancelled
+  status: varchar("status").notNull(), // draft, in_progress, completed, cancelled, terminated
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
+  terminationDate: timestamp("termination_date"),
+  terminationReason: text("termination_reason"),
   employerName: varchar("employer_name"),
   cfaName: varchar("cfa_name"),
   cachedData: jsonb("cached_data"), // Full cached data from Filiz API

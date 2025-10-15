@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTenant } from "@/contexts/TenantContext";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
-import { Search, FileText, Filter } from "lucide-react";
+import { Search, FileText, Filter, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "wouter";
 import type { Contract } from "@shared/schema";
@@ -98,6 +98,14 @@ export default function Contracts() {
               : "Sélectionnez une école pour voir les contrats"}
           </p>
         </div>
+        {currentTenant && (
+          <Button asChild>
+            <Link href="/contracts/create">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Contract
+            </Link>
+          </Button>
+        )}
       </div>
 
       {!currentTenant && !isAllSchools ? (

@@ -152,6 +152,14 @@ Core entities:
 - ✅ Added audit logging for all admin operations
 - ✅ Integrated Filiz API documentation research (https://documentation.filiz.io/)
 - ✅ Created CERFA 10103*10 field mapping system (181 form fields analyzed)
+- ✅ **Multi-Tenant Capability Restored** (October 15, 2025):
+  - **TenantSwitcher Visible**: Restored visibility in sidebar under "Établissement" section
+  - **All Schools View**: Backend already supports tenantId="all" to aggregate data across schools
+  - **Students Page Enhancement**: Now displays actual school names (not just "École") when viewing all schools
+    - Added tenant lookup map to fetch and display school names
+    - "École" column shows dynamically with badge containing school name
+  - **Full Multi-Tenant Support**: Dashboard KPIs, students list, contracts all support cross-school aggregation
+  - **Add Buttons**: Functional with tenant selection via TenantSwitcher
 
 ## Next Steps
 1. Implement database migrations

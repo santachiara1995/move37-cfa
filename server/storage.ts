@@ -143,7 +143,7 @@ export class DatabaseStorage implements IStorage {
       await tx.execute(sql`SELECT pg_advisory_xact_lock(7777)`);
       
       // Check if user already exists
-      const existingUser = await tx.select().from(users).where(eq(users.id, userData.id)).limit(1);
+      const existingUser = await tx.select().from(users).where(sql`${users.id} = ${userData.id}`).limit(1);
       
       if (existingUser.length > 0) {
         // User already exists, return their current role

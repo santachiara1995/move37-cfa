@@ -144,7 +144,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup className="hidden">
+        <SidebarGroup>
           <SidebarGroupLabel>Établissement</SidebarGroupLabel>
           <SidebarGroupContent className="px-2">
             <TenantSwitcher />

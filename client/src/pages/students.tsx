@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Search, Users as UsersIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Student } from "@shared/schema";
+import type { Student, Tenant } from "@shared/schema";
 import {
   Table,
   TableBody,
@@ -39,10 +39,22 @@ export default function Students() {
 
   const tenantParam = isAllSchools ? "all" : currentTenant?.id || "";
 
+  // Fetch all tenants to map school names
+  const { data: tenants = [] } = useQuery<Tenant[]>({
+    queryKey: ["/api/tenants"],
+    enabled: !authLoading && isAuthenticated,
+  });
+
   const { data: students = [], isLoading } = useQuery<Student[]>({
     queryKey: [`/api/students?tenantId=${tenantParam}${searchQuery ? `&search=${searchQuery}` : ""}`],
     enabled: !authLoading && isAuthenticated && (isAllSchools || !!currentTenant),
   });
+
+  // Create a lookup map for tenant names
+  const tenantMap = tenants.reduce((acc, tenant) => {
+    acc[tenant.id] = tenant.name;
+    return acc;
+  }, {} as Record<string, string>);
 
   const filteredStudents = students.filter((student) => {
     if (!searchQuery) return true;
@@ -170,7 +182,7 @@ export default function Students() {
                         </TableCell>
                         {isAllSchools && (
                           <TableCell>
-                            <Badge variant="outline">École</Badge>
+                            <Badge variant="outline">{tenantMap[student.tenantId] || "—"}</Badge>
                           </TableCell>
                         )}
                         <TableCell>

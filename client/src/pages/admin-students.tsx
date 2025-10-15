@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Checkbox } from "@/components/ui/checkbox";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, User, Search, Download, Upload, FileDown } from "lucide-react";
@@ -99,9 +102,29 @@ export default function AdminStudents() {
       tenantId: formData.get("tenantId") as string,
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
-      email: formData.get("email") as string,
-      phone: formData.get("phone") as string,
+      usageName: formData.get("usageName") as string || null,
+      nir: formData.get("nir") as string || null,
+      sex: formData.get("sex") as string || null,
+      email: formData.get("email") as string || null,
+      phone: formData.get("phone") as string || null,
       dateOfBirth: formData.get("dateOfBirth") ? new Date(formData.get("dateOfBirth") as string) : null,
+      addressNumber: formData.get("addressNumber") as string || null,
+      addressStreet: formData.get("addressStreet") as string || null,
+      addressComplement: formData.get("addressComplement") as string || null,
+      postalCode: formData.get("postalCode") as string || null,
+      city: formData.get("city") as string || null,
+      birthDepartment: formData.get("birthDepartment") as string || null,
+      birthCity: formData.get("birthCity") as string || null,
+      nationality: formData.get("nationality") as string || null,
+      socialRegime: formData.get("socialRegime") as string || null,
+      highLevelAthlete: formData.get("highLevelAthlete") === "on",
+      disabledWorker: formData.get("disabledWorker") === "on",
+      previousSituation: formData.get("previousSituation") as string || null,
+      lastDiploma: formData.get("lastDiploma") as string || null,
+      lastClassYear: formData.get("lastClassYear") as string || null,
+      lastDiplomaTitle: formData.get("lastDiplomaTitle") as string || null,
+      highestDiploma: formData.get("highestDiploma") as string || null,
+      businessProject: formData.get("businessProject") === "on",
       filizId: formData.get("filizId") as string || null,
       numeroOpco: formData.get("numeroOpco") as string || null,
       numeroDekra: formData.get("numeroDekra") as string || null,
@@ -547,96 +570,326 @@ export default function AdminStudents() {
                 </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    name="firstName"
-                    defaultValue={editingStudent?.firstName}
-                    required
-                    data-testid="input-student-firstname"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    name="lastName"
-                    defaultValue={editingStudent?.lastName}
-                    required
-                    data-testid="input-student-lastname"
-                  />
-                </div>
-              </div>
+              <Accordion type="multiple" defaultValue={["identity", "address", "contact"]} className="space-y-2">
+                <AccordionItem value="identity">
+                  <AccordionTrigger className="text-base font-semibold">
+                    Identité
+                  </AccordionTrigger>
+                  <AccordionContent className="space-y-4 pt-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Nom *</Label>
+                        <Input
+                          id="lastName"
+                          name="lastName"
+                          defaultValue={editingStudent?.lastName}
+                          required
+                          data-testid="input-student-lastname"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="usageName">Nom d'usage</Label>
+                        <Input
+                          id="usageName"
+                          name="usageName"
+                          defaultValue={editingStudent?.usageName || ""}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">Prénom *</Label>
+                        <Input
+                          id="firstName"
+                          name="firstName"
+                          defaultValue={editingStudent?.firstName}
+                          required
+                          data-testid="input-student-firstname"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="sex">Sexe</Label>
+                        <Select name="sex" defaultValue={editingStudent?.sex || ""}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="M">Masculin</SelectItem>
+                            <SelectItem value="F">Féminin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="dateOfBirth">Date de naissance</Label>
+                        <Input
+                          id="dateOfBirth"
+                          name="dateOfBirth"
+                          type="date"
+                          defaultValue={editingStudent?.dateOfBirth ? format(new Date(editingStudent.dateOfBirth), 'yyyy-MM-dd') : ""}
+                          data-testid="input-student-dob"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="nir">NIR (Sécurité sociale)</Label>
+                        <Input
+                          id="nir"
+                          name="nir"
+                          defaultValue={editingStudent?.nir || ""}
+                          placeholder="15 chiffres"
+                        />
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    defaultValue={editingStudent?.email || ""}
-                    data-testid="input-student-email"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    defaultValue={editingStudent?.phone || ""}
-                    data-testid="input-student-phone"
-                  />
-                </div>
-              </div>
+                <AccordionItem value="address">
+                  <AccordionTrigger className="text-base font-semibold">
+                    Adresse
+                  </AccordionTrigger>
+                  <AccordionContent className="space-y-4 pt-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="addressNumber">Numéro</Label>
+                        <Input
+                          id="addressNumber"
+                          name="addressNumber"
+                          defaultValue={editingStudent?.addressNumber || ""}
+                        />
+                      </div>
+                      <div className="space-y-2 col-span-2">
+                        <Label htmlFor="addressStreet">Rue</Label>
+                        <Input
+                          id="addressStreet"
+                          name="addressStreet"
+                          defaultValue={editingStudent?.addressStreet || ""}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="addressComplement">Complément d'adresse</Label>
+                      <Input
+                        id="addressComplement"
+                        name="addressComplement"
+                        defaultValue={editingStudent?.addressComplement || ""}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="postalCode">Code postal</Label>
+                        <Input
+                          id="postalCode"
+                          name="postalCode"
+                          defaultValue={editingStudent?.postalCode || ""}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="city">Ville</Label>
+                        <Input
+                          id="city"
+                          name="city"
+                          defaultValue={editingStudent?.city || ""}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="birthDepartment">Département de naissance</Label>
+                        <Input
+                          id="birthDepartment"
+                          name="birthDepartment"
+                          defaultValue={editingStudent?.birthDepartment || ""}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="birthCity">Ville de naissance</Label>
+                        <Input
+                          id="birthCity"
+                          name="birthCity"
+                          defaultValue={editingStudent?.birthCity || ""}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="nationality">Nationalité</Label>
+                      <Input
+                        id="nationality"
+                        name="nationality"
+                        defaultValue={editingStudent?.nationality || ""}
+                        placeholder="Française, etc."
+                      />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Input
-                    id="dateOfBirth"
-                    name="dateOfBirth"
-                    type="date"
-                    defaultValue={editingStudent?.dateOfBirth ? format(new Date(editingStudent.dateOfBirth), 'yyyy-MM-dd') : ""}
-                    data-testid="input-student-dob"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="filizId">Filiz ID (optional)</Label>
-                  <Input
-                    id="filizId"
-                    name="filizId"
-                    defaultValue={editingStudent?.filizId || ""}
-                    placeholder="External ID from Filiz"
-                    data-testid="input-student-filizid"
-                  />
-                </div>
-              </div>
+                <AccordionItem value="contact">
+                  <AccordionTrigger className="text-base font-semibold">
+                    Contact
+                  </AccordionTrigger>
+                  <AccordionContent className="space-y-4 pt-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Téléphone</Label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          defaultValue={editingStudent?.phone || ""}
+                          data-testid="input-student-phone"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          defaultValue={editingStudent?.email || ""}
+                          data-testid="input-student-email"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="socialRegime">Régime de sécurité sociale</Label>
+                      <Input
+                        id="socialRegime"
+                        name="socialRegime"
+                        defaultValue={editingStudent?.socialRegime || ""}
+                        placeholder="Régime général, MSA, etc."
+                      />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="numeroOpco">Numéro OPCO (optional)</Label>
-                  <Input
-                    id="numeroOpco"
-                    name="numeroOpco"
-                    defaultValue={editingStudent?.numeroOpco || ""}
-                    placeholder="OPCO number"
-                    data-testid="input-student-numeroopco"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="numeroDekra">Numéro DEKRA (optional)</Label>
-                  <Input
-                    id="numeroDekra"
-                    name="numeroDekra"
-                    defaultValue={editingStudent?.numeroDekra || ""}
-                    placeholder="DEKRA number"
-                    data-testid="input-student-numerodekra"
-                  />
-                </div>
-              </div>
+                <AccordionItem value="status">
+                  <AccordionTrigger className="text-base font-semibold">
+                    Statut
+                  </AccordionTrigger>
+                  <AccordionContent className="space-y-4 pt-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="highLevelAthlete"
+                        name="highLevelAthlete"
+                        defaultChecked={editingStudent?.highLevelAthlete || false}
+                      />
+                      <Label htmlFor="highLevelAthlete" className="font-normal cursor-pointer">
+                        Sportif de haut niveau
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="disabledWorker"
+                        name="disabledWorker"
+                        defaultChecked={editingStudent?.disabledWorker || false}
+                      />
+                      <Label htmlFor="disabledWorker" className="font-normal cursor-pointer">
+                        Travailleur handicapé (RQTH)
+                      </Label>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="education">
+                  <AccordionTrigger className="text-base font-semibold">
+                    Formation
+                  </AccordionTrigger>
+                  <AccordionContent className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="previousSituation">Situation avant le contrat</Label>
+                      <Input
+                        id="previousSituation"
+                        name="previousSituation"
+                        defaultValue={editingStudent?.previousSituation || ""}
+                        placeholder="Scolaire, demandeur d'emploi, etc."
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="lastDiploma">Dernier diplôme obtenu</Label>
+                        <Input
+                          id="lastDiploma"
+                          name="lastDiploma"
+                          defaultValue={editingStudent?.lastDiploma || ""}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastClassYear">Dernière année de classe</Label>
+                        <Input
+                          id="lastClassYear"
+                          name="lastClassYear"
+                          defaultValue={editingStudent?.lastClassYear || ""}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastDiplomaTitle">Intitulé du dernier diplôme</Label>
+                      <Input
+                        id="lastDiplomaTitle"
+                        name="lastDiplomaTitle"
+                        defaultValue={editingStudent?.lastDiplomaTitle || ""}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="highestDiploma">Diplôme le plus élevé obtenu</Label>
+                      <Input
+                        id="highestDiploma"
+                        name="highestDiploma"
+                        defaultValue={editingStudent?.highestDiploma || ""}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="businessProject"
+                        name="businessProject"
+                        defaultChecked={editingStudent?.businessProject || false}
+                      />
+                      <Label htmlFor="businessProject" className="font-normal cursor-pointer">
+                        Projet de création/reprise d'entreprise
+                      </Label>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="ids">
+                  <AccordionTrigger className="text-base font-semibold">
+                    Identifiants
+                  </AccordionTrigger>
+                  <AccordionContent className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="filizId">Filiz ID (optionnel)</Label>
+                      <Input
+                        id="filizId"
+                        name="filizId"
+                        defaultValue={editingStudent?.filizId || ""}
+                        placeholder="External ID from Filiz"
+                        data-testid="input-student-filizid"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="numeroOpco">Numéro OPCO (optionnel)</Label>
+                        <Input
+                          id="numeroOpco"
+                          name="numeroOpco"
+                          defaultValue={editingStudent?.numeroOpco || ""}
+                          placeholder="OPCO number"
+                          data-testid="input-student-numeroopco"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="numeroDekra">Numéro DEKRA (optionnel)</Label>
+                        <Input
+                          id="numeroDekra"
+                          name="numeroDekra"
+                          defaultValue={editingStudent?.numeroDekra || ""}
+                          placeholder="DEKRA number"
+                          data-testid="input-student-numerodekra"
+                        />
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>

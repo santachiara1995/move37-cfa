@@ -21,6 +21,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import type { Tenant } from "@shared/schema";
@@ -114,10 +116,22 @@ export default function Dashboard() {
     const data = {
       tenantId: selectedSchoolId,
       raisonSociale: formData.get("raisonSociale") as string,
+      siret: formData.get("siret") as string || null,
+      addressNumber: formData.get("addressNumber") as string || null,
+      addressStreet: formData.get("addressStreet") as string || null,
+      addressComplement: formData.get("addressComplement") as string || null,
+      postalCode: formData.get("postalCode") as string || null,
+      city: formData.get("city") as string || null,
+      employerType: formData.get("employerType") as string || null,
+      employerSpecific: formData.get("employerSpecific") as string || null,
+      nafCode: formData.get("nafCode") as string || null,
+      totalEmployees: formData.get("totalEmployees") as string || null,
+      idcc: formData.get("idcc") as string || null,
       nom: formData.get("nom") as string,
       prenom: formData.get("prenom") as string,
-      email: formData.get("email") as string,
-      phone: formData.get("phone") as string,
+      email: formData.get("email") as string || null,
+      phone: formData.get("phone") as string || null,
+      filizId: formData.get("filizId") as string || null,
     };
     
     // Validate required fields
@@ -281,53 +295,181 @@ export default function Dashboard() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="raisonSociale">Raison Sociale</Label>
-                      <Input
-                        id="raisonSociale"
-                        name="raisonSociale"
-                        required
-                        placeholder="e.g., ABC Corporation"
-                        data-testid="input-entreprise-raison-sociale"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="prenom">Prénom</Label>
-                        <Input
-                          id="prenom"
-                          name="prenom"
-                          required
-                          data-testid="input-entreprise-prenom"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="nom">Nom</Label>
-                        <Input
-                          id="nom"
-                          name="nom"
-                          required
-                          data-testid="input-entreprise-nom"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        data-testid="input-entreprise-email"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Téléphone</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        data-testid="input-entreprise-phone"
-                      />
-                    </div>
+                    <Accordion type="multiple" defaultValue={["identity", "address", "contact"]} className="space-y-2">
+                      <AccordionItem value="identity">
+                        <AccordionTrigger className="text-base font-semibold">
+                          Identité de l'entreprise
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-4 pt-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="raisonSociale">Raison Sociale *</Label>
+                            <Input
+                              id="raisonSociale"
+                              name="raisonSociale"
+                              required
+                              placeholder="e.g., ABC Corporation"
+                              data-testid="input-entreprise-raison-sociale"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="siret">SIRET</Label>
+                              <Input
+                                id="siret"
+                                name="siret"
+                                placeholder="14 chiffres"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="nafCode">Code NAF</Label>
+                              <Input
+                                id="nafCode"
+                                name="nafCode"
+                                placeholder="5 caractères"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="employerType">Type d'employeur</Label>
+                              <Input
+                                id="employerType"
+                                name="employerType"
+                                placeholder="SA, SARL, etc."
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="employerSpecific">Secteur spécifique</Label>
+                              <Input
+                                id="employerSpecific"
+                                name="employerSpecific"
+                                placeholder="Public, privé, associatif"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="totalEmployees">Nombre de salariés</Label>
+                              <Input
+                                id="totalEmployees"
+                                name="totalEmployees"
+                                placeholder="Ex: 50"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="idcc">IDCC (Convention collective)</Label>
+                              <Input
+                                id="idcc"
+                                name="idcc"
+                                placeholder="Code IDCC"
+                              />
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="address">
+                        <AccordionTrigger className="text-base font-semibold">
+                          Adresse
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-4 pt-4">
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="addressNumber">Numéro</Label>
+                              <Input
+                                id="addressNumber"
+                                name="addressNumber"
+                              />
+                            </div>
+                            <div className="space-y-2 col-span-2">
+                              <Label htmlFor="addressStreet">Rue</Label>
+                              <Input
+                                id="addressStreet"
+                                name="addressStreet"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="addressComplement">Complément d'adresse</Label>
+                            <Input
+                              id="addressComplement"
+                              name="addressComplement"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="postalCode">Code postal</Label>
+                              <Input
+                                id="postalCode"
+                                name="postalCode"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="city">Ville</Label>
+                              <Input
+                                id="city"
+                                name="city"
+                              />
+                            </div>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem value="contact">
+                        <AccordionTrigger className="text-base font-semibold">
+                          Contact
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-4 pt-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="prenom">Prénom *</Label>
+                              <Input
+                                id="prenom"
+                                name="prenom"
+                                required
+                                data-testid="input-entreprise-prenom"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="nom">Nom *</Label>
+                              <Input
+                                id="nom"
+                                name="nom"
+                                required
+                                data-testid="input-entreprise-nom"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="email">Email</Label>
+                              <Input
+                                id="email"
+                                name="email"
+                                type="email"
+                                data-testid="input-entreprise-email"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="phone">Téléphone</Label>
+                              <Input
+                                id="phone"
+                                name="phone"
+                                data-testid="input-entreprise-phone"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="filizId">Filiz ID (optionnel)</Label>
+                            <Input
+                              id="filizId"
+                              name="filizId"
+                              placeholder="External ID from Filiz"
+                            />
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
                     <DialogFooter>
                       <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                         Annuler

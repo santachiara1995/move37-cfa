@@ -87,11 +87,36 @@ export const students = pgTable("students", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
   filizId: varchar("filiz_id"), // External ID from Filiz API
-  firstName: varchar("first_name").notNull(),
+  
   lastName: varchar("last_name").notNull(),
-  email: varchar("email"),
-  phone: varchar("phone"),
+  usageName: varchar("usage_name"),
+  firstName: varchar("first_name").notNull(),
+  nir: varchar("nir"),
   dateOfBirth: timestamp("date_of_birth"),
+  sex: varchar("sex"),
+  
+  addressNumber: varchar("address_number"),
+  addressStreet: varchar("address_street"),
+  addressComplement: varchar("address_complement"),
+  postalCode: varchar("postal_code"),
+  city: varchar("city"),
+  birthDepartment: varchar("birth_department"),
+  birthCity: varchar("birth_city"),
+  nationality: varchar("nationality"),
+  socialRegime: varchar("social_regime"),
+  
+  phone: varchar("phone"),
+  email: varchar("email"),
+  
+  highLevelAthlete: boolean("high_level_athlete"),
+  disabledWorker: boolean("disabled_worker"),
+  previousSituation: varchar("previous_situation"),
+  lastDiploma: varchar("last_diploma"),
+  lastClassYear: varchar("last_class_year"),
+  lastDiplomaTitle: varchar("last_diploma_title"),
+  highestDiploma: varchar("highest_diploma"),
+  businessProject: boolean("business_project"),
+  
   numeroOpco: varchar("numero_opco"), // Numéro OPCO
   numeroDekra: varchar("numero_dekra"), // Numéro DEKRA
   cachedData: jsonb("cached_data"), // Full cached data from Filiz API
@@ -120,11 +145,25 @@ export type Student = typeof students.$inferSelect;
 export const entreprises = pgTable("entreprises", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
-  raisonSociale: varchar("raison_sociale").notNull(), // Company name
-  nom: varchar("nom").notNull(), // Contact last name
-  prenom: varchar("prenom").notNull(), // Contact first name
-  email: varchar("email"),
+  
+  raisonSociale: varchar("raison_sociale").notNull(),
+  siret: varchar("siret"),
+  addressNumber: varchar("address_number"),
+  addressStreet: varchar("address_street"),
+  addressComplement: varchar("address_complement"),
+  postalCode: varchar("postal_code"),
+  city: varchar("city"),
   phone: varchar("phone"),
+  email: varchar("email"),
+  employerType: varchar("employer_type"),
+  employerSpecific: varchar("employer_specific"),
+  nafCode: varchar("naf_code"),
+  totalEmployees: varchar("total_employees"),
+  idcc: varchar("idcc"),
+  
+  nom: varchar("nom"),
+  prenom: varchar("prenom"),
+  
   filizId: varchar("filiz_id"), // External ID from Filiz API
   cachedData: jsonb("cached_data"), // Full cached data from Filiz API
   lastSyncedAt: timestamp("last_synced_at"),

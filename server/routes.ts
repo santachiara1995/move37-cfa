@@ -415,6 +415,162 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/contracts/:id/terminate", isAuthenticated, requireRole("OpsAdmin", "BillingOps"), async (req: any, res: Response) => {
+    try {
+      const contractId = req.params.id;
+      const userId = req.user.claims.sub;
+      const { terminationDate, terminationReason } = req.body;
+
+      if (!terminationDate) {
+        return res.status(400).json({ message: "Termination date is required" });
+      }
+
+      const contract = await storage.getContract(contractId);
+      if (!contract) {
+        return res.status(404).json({ message: "Contract not found" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.tenantIds.includes(contract.tenantId)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const updatedContract = await storage.updateContract(contractId, {
+        status: "terminated",
+        terminationDate: new Date(terminationDate),
+        terminationReason: terminationReason || null,
+      });
+
+      await createAuditLog(
+        userId,
+        contract.tenantId,
+        "terminate_contract",
+        "contract",
+        contractId,
+        { terminationDate, terminationReason },
+        req
+      );
+
+      res.json(updatedContract);
+    } catch (error) {
+      console.error("Error terminating contract:", error);
+      res.status(500).json({ message: "Failed to terminate contract" });
+    }
+  });
+
+  app.get("/api/contracts/:id/payments", isAuthenticated, requireRole("OpsAdmin", "BillingOps", "AnalystRO"), async (req: any, res: Response) => {
+    try {
+      const contractId = req.params.id;
+      const userId = req.user.claims.sub;
+
+      const contract = await storage.getContract(contractId);
+      if (!contract) {
+        return res.status(404).json({ message: "Contract not found" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.tenantIds.includes(contract.tenantId)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      if (contract.filizId) {
+        const tenant = await storage.getTenant(contract.tenantId);
+        if (!tenant) {
+          return res.status(404).json({ message: "Tenant not found" });
+        }
+
+        const filizAdapter = new FilizAdapter(tenant);
+        const paymentSchedule = await filizAdapter.getPaymentSchedule(contract.filizId);
+
+        const opcoRecords = await storage.getOpcoByContractId(contractId);
+        const racRecords = await storage.getRacByContractId(contractId);
+
+        res.json({
+          filizData: paymentSchedule,
+          opcoRecords,
+          racRecords,
+          summary: {
+            totalOPCO: paymentSchedule.totalDeadlineOPCO,
+            totalRAC: paymentSchedule.totalDeadlineRAC,
+            opcoCount: opcoRecords.length,
+            racCount: racRecords.length,
+          },
+        });
+      } else {
+        const opcoRecords = await storage.getOpcoByContractId(contractId);
+        const racRecords = await storage.getRacByContractId(contractId);
+
+        const totalRAC = racRecords.reduce((sum, rac) => sum + (rac.amount || 0), 0);
+
+        res.json({
+          filizData: null,
+          opcoRecords,
+          racRecords,
+          summary: {
+            totalOPCO: 0,
+            totalRAC,
+            opcoCount: opcoRecords.length,
+            racCount: racRecords.length,
+          },
+        });
+      }
+
+      await createAuditLog(
+        userId,
+        contract.tenantId,
+        "view_payment_schedule",
+        "contract",
+        contractId,
+        {},
+        req
+      );
+    } catch (error) {
+      console.error("Error fetching payment schedule:", error);
+      res.status(500).json({ message: "Failed to fetch payment schedule" });
+    }
+  });
+
+  app.post("/api/contracts/:id/sync", isAuthenticated, requireRole("OpsAdmin", "BillingOps"), async (req: any, res: Response) => {
+    try {
+      const contractId = req.params.id;
+      const userId = req.user.claims.sub;
+
+      const contract = await storage.getContract(contractId);
+      if (!contract) {
+        return res.status(404).json({ message: "Contract not found" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.tenantIds.includes(contract.tenantId)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      if (!contract.filizId) {
+        return res.status(400).json({ message: "Contract has no Filiz ID" });
+      }
+
+      const tenant = await storage.getTenant(contract.tenantId);
+      if (!tenant || !tenant.filizApiKey) {
+        return res.status(400).json({ message: "Tenant Filiz API not configured" });
+      }
+
+      const filizAdapter = new FilizAdapter(tenant);
+      const filizData = await filizAdapter.getDossier(contract.filizId);
+
+      const updatedContract = await storage.updateContract(contractId, {
+        cachedData: filizData,
+        lastSyncedAt: new Date(),
+      });
+
+      await createAuditLog(userId, contract.tenantId, "sync_contract", "contract", contractId, {}, req);
+
+      res.json(updatedContract);
+    } catch (error) {
+      console.error("Error syncing contract:", error);
+      res.status(500).json({ message: "Failed to sync contract data" });
+    }
+  });
+
   // ========== DEVIS ROUTES ==========
   app.get("/api/devis", isAuthenticated, requireRole("OpsAdmin", "BillingOps", "AnalystRO"), async (req: any, res: Response) => {
     try {

@@ -784,7 +784,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CSV Export
   app.get("/api/admin/export/schools", isAuthenticated, async (req: any, res: Response) => {
     try {
-      const schools = await storage.getAllTenants();
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      // Export only schools the user has access to
+      const allSchools = await storage.getAllTenants();
+      const schools = allSchools.filter((school) => user.tenantIds.includes(school.id));
       
       const csv = [
         "ID,Name,Slug,Filiz API URL,Active,Created At",
@@ -857,8 +869,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Schools Management
   app.get("/api/admin/schools", isAuthenticated, async (req: any, res: Response) => {
     try {
-      const schools = await storage.getAllTenants();
-      res.json(schools);
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const userId = auth.userId;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      // Return only schools the user has access to
+      const allSchools = await storage.getAllTenants();
+      const accessibleSchools = allSchools.filter((school) => user.tenantIds.includes(school.id));
+      res.json(accessibleSchools);
     } catch (error) {
       console.error("Error fetching schools:", error);
       res.status(500).json({ message: "Failed to fetch schools" });
@@ -872,6 +896,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized" });
       }
       const userId = auth.userId;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
       
       const validation = insertTenantSchema.safeParse(req.body);
       if (!validation.success) {
@@ -882,6 +910,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const school = await storage.createTenant(validation.data);
+      
+      // Automatically grant the creator access to the new school
+      await storage.upsertUser({
+        id: userId,
+        email: user.email,
+        role: user.role,
+        tenantIds: [...user.tenantIds, school.id],
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+      });
       
       await createAuditLog(
         userId,
@@ -907,6 +946,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized" });
       }
       const userId = auth.userId;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      // Check if user has access to this school
+      if (!user.tenantIds.includes(req.params.id)) {
+        return res.status(403).json({ message: "Access denied: You don't have permission to modify this school" });
+      }
       
       const existingSchool = await storage.getTenant(req.params.id);
       if (!existingSchool) {
@@ -947,6 +995,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized" });
       }
       const userId = auth.userId;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      // Check if user has access to this school
+      if (!user.tenantIds.includes(req.params.id)) {
+        return res.status(403).json({ message: "Access denied: You don't have permission to delete this school" });
+      }
       
       const existingSchool = await storage.getTenant(req.params.id);
       if (!existingSchool) {

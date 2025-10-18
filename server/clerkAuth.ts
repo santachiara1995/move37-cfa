@@ -34,7 +34,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 };
 
 // Middleware to sync Clerk user with database
-// First user becomes OpsAdmin (atomically), subsequent users require manual role assignment
+// First user becomes OpsAdmin with access to all tenants (atomically)
 export const syncClerkUser: RequestHandler = async (req, res, next) => {
   const auth = getAuth(req);
   
@@ -44,14 +44,17 @@ export const syncClerkUser: RequestHandler = async (req, res, next) => {
 
   try {
     const userId = auth.userId;
+    const userEmail = auth.sessionClaims?.email as string || `user-${userId}@example.com`;
+    const userFirstName = auth.sessionClaims?.firstName as string || null;
+    const userLastName = auth.sessionClaims?.lastName as string || null;
     
     // Use atomic first-user creation to prevent race conditions
     // This uses PostgreSQL advisory locks to ensure only one OpsAdmin is ever created
     const result = await storage.createFirstUserAtomically({
       id: userId,
-      email: auth.sessionClaims?.email as string || `user-${userId}@example.com`,
-      firstName: auth.sessionClaims?.firstName as string || null,
-      lastName: auth.sessionClaims?.lastName as string || null,
+      email: userEmail,
+      firstName: userFirstName,
+      lastName: userLastName,
       profileImageUrl: auth.sessionClaims?.imageUrl as string || null,
       role: "AnalystRO", // Will be overridden to OpsAdmin if first user
       tenantIds: [], // Will be populated if first user
@@ -59,9 +62,32 @@ export const syncClerkUser: RequestHandler = async (req, res, next) => {
     
     if (result.created) {
       if (result.role === "OpsAdmin") {
-        console.log(`✅ First OpsAdmin created: ${auth.sessionClaims?.email}`);
+        console.log(`✅ First OpsAdmin created with access to all tenants: ${userEmail}`);
       } else {
-        console.log(`⚠️  New user created with limited access: ${auth.sessionClaims?.email}. An OpsAdmin must assign proper role and tenants.`);
+        try {
+          const schoolName = `École de ${userEmail}`;
+          const schoolSlug = userEmail.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-');
+          
+          const newTenant = await storage.createTenant({
+            name: schoolName,
+            slug: schoolSlug,
+            isActive: true,
+          });
+          
+          await storage.upsertUser({
+            id: userId,
+            email: userEmail,
+            firstName: userFirstName,
+            lastName: userLastName,
+            profileImageUrl: auth.sessionClaims?.imageUrl as string || null,
+            role: "OpsAdmin", // OpsAdmin for their own tenant
+            tenantIds: [newTenant.id], // Access only to their tenant
+          });
+          
+          console.log(`✅ New user created tenant "${schoolName}" and assigned as OpsAdmin: ${userEmail}`);
+        } catch (error) {
+          console.error("Error creating tenant for new user:", error);
+        }
       }
     }
     

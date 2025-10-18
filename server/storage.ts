@@ -3,6 +3,7 @@ import {
   tenants,
   students,
   entreprises,
+  masters,
   contracts,
   devis,
   opco,
@@ -18,6 +19,8 @@ import {
   type InsertStudent,
   type Entreprise,
   type InsertEntreprise,
+  type Master,
+  type InsertMaster,
   type Contract,
   type InsertContract,
   type Devis,
@@ -68,6 +71,13 @@ export interface IStorage {
   createEntreprise(entreprise: InsertEntreprise): Promise<Entreprise>;
   updateEntreprise(id: string, entreprise: Partial<InsertEntreprise>): Promise<Entreprise>;
   deleteEntreprise(id: string): Promise<void>;
+
+  // Master operations
+  getMasters(tenantId: string): Promise<Master[]>;
+  getMaster(id: string): Promise<Master | undefined>;
+  createMaster(master: InsertMaster): Promise<Master>;
+  updateMaster(id: string, master: Partial<InsertMaster>): Promise<Master>;
+  deleteMaster(id: string): Promise<void>;
 
   // Program operations
   getPrograms(tenantId: string): Promise<Program[]>;
@@ -296,6 +306,38 @@ export class DatabaseStorage implements IStorage {
 
   async deleteEntreprise(id: string): Promise<void> {
     await db.delete(entreprises).where(eq(entreprises.id, id));
+  }
+
+  // Master operations
+  async getMasters(tenantId: string): Promise<Master[]> {
+    return await db
+      .select()
+      .from(masters)
+      .where(eq(masters.tenantId, tenantId))
+      .orderBy(desc(masters.createdAt));
+  }
+
+  async getMaster(id: string): Promise<Master | undefined> {
+    const [master] = await db.select().from(masters).where(eq(masters.id, id));
+    return master;
+  }
+
+  async createMaster(masterData: InsertMaster): Promise<Master> {
+    const [master] = await db.insert(masters).values(masterData).returning();
+    return master;
+  }
+
+  async updateMaster(id: string, masterData: Partial<InsertMaster>): Promise<Master> {
+    const [master] = await db
+      .update(masters)
+      .set({ ...masterData, updatedAt: new Date() })
+      .where(eq(masters.id, id))
+      .returning();
+    return master;
+  }
+
+  async deleteMaster(id: string): Promise<void> {
+    await db.delete(masters).where(eq(masters.id, id));
   }
 
   // Program operations

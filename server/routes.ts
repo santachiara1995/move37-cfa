@@ -10,6 +10,7 @@ import {
   insertTenantSchema, 
   insertStudentSchema,
   insertEntrepriseSchema,
+  insertMasterSchema,
   insertProgramSchema,
   insertContractSchema,
   updateUserRoleSchema,
@@ -1218,6 +1219,165 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting student:", error);
       res.status(500).json({ message: "Failed to delete student" });
+    }
+  });
+
+  // ========== ADMIN MASTERS ROUTES ==========
+  app.get("/api/admin/masters", isAuthenticated, requireRole("OpsAdmin"), async (req: Request, res: Response) => {
+    try {
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const user = await storage.getUser(auth.userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      const allMasters = await Promise.all(
+        user.tenantIds.map((tenantId) => storage.getMasters(tenantId))
+      );
+      const masters = allMasters.flat();
+
+      res.json(masters);
+    } catch (error) {
+      console.error("Error fetching masters:", error);
+      res.status(500).json({ message: "Failed to fetch masters" });
+    }
+  });
+
+  app.get("/api/admin/masters/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: Request, res: Response) => {
+    try {
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const master = await storage.getMaster(req.params.id);
+      if (!master) {
+        return res.status(404).json({ message: "Master not found" });
+      }
+
+      const user = await storage.getUser(auth.userId);
+      if (!user || !user.tenantIds.includes(master.tenantId)) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      res.json(master);
+    } catch (error) {
+      console.error("Error fetching master:", error);
+      res.status(500).json({ message: "Failed to fetch master" });
+    }
+  });
+
+  app.post("/api/admin/masters", isAuthenticated, requireRole("OpsAdmin"), async (req: Request, res: Response) => {
+    try {
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const user = await storage.getUser(auth.userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      const validatedData = insertMasterSchema.parse(req.body);
+
+      if (!user.tenantIds.includes(validatedData.tenantId)) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      const master = await storage.createMaster(validatedData);
+
+      await createAuditLog(
+        auth.userId,
+        validatedData.tenantId,
+        "create_master",
+        "master",
+        master.id,
+        { masterData: validatedData },
+        req
+      );
+
+      res.json(master);
+    } catch (error) {
+      console.error("Error creating master:", error);
+      res.status(500).json({ message: "Failed to create master" });
+    }
+  });
+
+  app.put("/api/admin/masters/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: Request, res: Response) => {
+    try {
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const master = await storage.getMaster(req.params.id);
+      if (!master) {
+        return res.status(404).json({ message: "Master not found" });
+      }
+
+      const user = await storage.getUser(auth.userId);
+      if (!user || !user.tenantIds.includes(master.tenantId)) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      const validatedData = insertMasterSchema.partial().parse(req.body);
+      const updatedMaster = await storage.updateMaster(req.params.id, validatedData);
+
+      await createAuditLog(
+        auth.userId,
+        master.tenantId,
+        "update_master",
+        "master",
+        master.id,
+        { updates: validatedData },
+        req
+      );
+
+      res.json(updatedMaster);
+    } catch (error) {
+      console.error("Error updating master:", error);
+      res.status(500).json({ message: "Failed to update master" });
+    }
+  });
+
+  app.delete("/api/admin/masters/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: Request, res: Response) => {
+    try {
+      const auth = getAuth(req);
+      if (!auth?.userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const master = await storage.getMaster(req.params.id);
+      if (!master) {
+        return res.status(404).json({ message: "Master not found" });
+      }
+
+      const user = await storage.getUser(auth.userId);
+      if (!user || !user.tenantIds.includes(master.tenantId)) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      await storage.deleteMaster(req.params.id);
+
+      await createAuditLog(
+        auth.userId,
+        master.tenantId,
+        "delete_master",
+        "master",
+        master.id,
+        {},
+        req
+      );
+
+      res.json({ message: "Master deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting master:", error);
+      res.status(500).json({ message: "Failed to delete master" });
     }
   });
 

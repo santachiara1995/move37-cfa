@@ -21,6 +21,7 @@ import RacPage from "@/pages/rac";
 import AuditLogs from "@/pages/audit-logs";
 import AdminSchools from "@/pages/admin-schools";
 import AdminStudents from "@/pages/admin-students";
+import AdminMasters from "@/pages/admin-masters";
 import AdminPrograms from "@/pages/admin-programs";
 import AdminUsers from "@/pages/admin-users";
 import AdminActivity from "@/pages/admin-activity";
@@ -49,6 +50,7 @@ function Router() {
           <Route path="/audit" component={AuditLogs} />
           <Route path="/admin/schools" component={AdminSchools} />
           <Route path="/admin/students" component={AdminStudents} />
+          <Route path="/admin/masters" component={AdminMasters} />
           <Route path="/admin/programs" component={AdminPrograms} />
           <Route path="/admin/users" component={AdminUsers} />
           <Route path="/admin/activity" component={AdminActivity} />

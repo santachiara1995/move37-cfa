@@ -181,6 +181,40 @@ export type InsertEntreprise = z.infer<typeof insertEntrepriseSchema>;
 export type Entreprise = typeof entreprises.$inferSelect;
 
 // ============================================================================
+// ============================================================================
+
+export const masters = pgTable("masters", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull().references(() => tenants.id),
+  entrepriseId: varchar("entreprise_id").references(() => entreprises.id),
+  
+  lastName: varchar("last_name").notNull(),
+  firstName: varchar("first_name").notNull(),
+  birthDate: timestamp("birth_date"),
+  nir: varchar("nir"),
+  email: varchar("email"),
+  phone: varchar("phone"),
+  jobTitle: varchar("job_title"),
+  diploma: varchar("diploma"),
+  diplomaLevel: varchar("diploma_level"),
+  
+  filizId: varchar("filiz_id"),
+  cachedData: jsonb("cached_data"),
+  lastSyncedAt: timestamp("last_synced_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertMasterSchema = createInsertSchema(masters).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertMaster = z.infer<typeof insertMasterSchema>;
+export type Master = typeof masters.$inferSelect;
+
+// ============================================================================
 // CONTRACTS
 // ============================================================================
 

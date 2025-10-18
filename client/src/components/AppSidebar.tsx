@@ -97,6 +97,12 @@ const adminMenuItems = [
     testId: "nav-admin-students",
   },
   {
+    title: "Maîtres d'Apprentissage",
+    url: "/admin/masters",
+    icon: UserCog,
+    testId: "nav-admin-masters",
+  },
+  {
     title: "Programmes",
     url: "/admin/programs",
     icon: GraduationCap,

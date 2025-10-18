@@ -197,14 +197,13 @@ export default function Dashboard() {
               : "Sélectionnez une école pour voir le tableau de bord"}
           </p>
         </div>
-        {user?.role === "OpsAdmin" && (
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button data-testid="button-create-dossier" className="gap-2">
-                <FolderPlus className="w-4 h-4" />
-                Créer un Dossier
-              </Button>
-            </DialogTrigger>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button data-testid="button-create-dossier" className="gap-2">
+              <FolderPlus className="w-4 h-4" />
+              Créer un Dossier
+            </Button>
+          </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Créer un Nouveau Dossier</DialogTitle>
@@ -483,7 +482,6 @@ export default function Dashboard() {
               </Tabs>
             </DialogContent>
           </Dialog>
-        )}
       </div>
 
       {!currentTenant && !isAllSchools ? (

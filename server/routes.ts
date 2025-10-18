@@ -782,7 +782,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // CSV Export
-  app.get("/api/admin/export/schools", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+  app.get("/api/admin/export/schools", isAuthenticated, async (req: any, res: Response) => {
     try {
       const schools = await storage.getAllTenants();
       
@@ -855,7 +855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Schools Management
-  app.get("/api/admin/schools", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+  app.get("/api/admin/schools", isAuthenticated, async (req: any, res: Response) => {
     try {
       const schools = await storage.getAllTenants();
       res.json(schools);
@@ -865,7 +865,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/schools", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+  app.post("/api/admin/schools", isAuthenticated, async (req: any, res: Response) => {
     try {
       const auth = getAuth(req);
       if (!auth?.userId) {
@@ -900,7 +900,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/schools/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+  app.put("/api/admin/schools/:id", isAuthenticated, async (req: any, res: Response) => {
     try {
       const auth = getAuth(req);
       if (!auth?.userId) {
@@ -940,7 +940,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/schools/:id", isAuthenticated, requireRole("OpsAdmin"), async (req: any, res: Response) => {
+  app.delete("/api/admin/schools/:id", isAuthenticated, async (req: any, res: Response) => {
     try {
       const auth = getAuth(req);
       if (!auth?.userId) {

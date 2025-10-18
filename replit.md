@@ -160,6 +160,13 @@ Core entities:
     - "École" column shows dynamically with badge containing school name
   - **Full Multi-Tenant Support**: Dashboard KPIs, students list, contracts all support cross-school aggregation
   - **Add Buttons**: Functional with tenant selection via TenantSwitcher
+- ✅ **Tenant-Level Authorization for School Management** (October 18, 2025):
+  - **Universal School Creation**: All authenticated users can now create and manage their own schools (not just OpsAdmin)
+  - **Tenant-Scoped Authorization**: Backend routes (GET/POST/PUT/DELETE /api/admin/schools, CSV export) filter by user.tenantIds
+  - **Auto-Access**: School creators automatically granted access to their new schools via storage.upsertUser
+  - **Strict Isolation**: Users can only view/edit/delete schools they have access to, preventing cross-tenant data leakage
+  - **Frontend UI Updates**: "Administration" menu and "Créer un Dossier" button now visible to all authenticated users
+  - **Security Model**: Multi-tenant isolation via user.tenantIds array instead of global role restrictions
 
 ## Next Steps
 1. Implement database migrations
